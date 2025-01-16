@@ -1,0 +1,11 @@
+{
+    "name": "supernova-ai-service",
+    "version": "0.1.0",
+    "scripts": {
+        "start:server": "python -m server --reload",
+        "create-db": "cd server/database && alembic upgrade head && cd ../.. && python -m server.database.create-test-data",
+        "update-db": "cd server/database && alembic upgrade head && cd ../.."
+    },
+    "dependencies": {},
+    "devDependencies": {}
+  }
