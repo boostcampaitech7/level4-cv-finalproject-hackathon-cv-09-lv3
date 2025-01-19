@@ -1,0 +1,48 @@
+name: ai_hackathon
+channels:
+  - defaults
+dependencies:
+  - bzip2
+  - ca-certificates
+  - libffi
+  - openssl
+  - pip=24.2
+  - pytho
+  - setuptools
+  - sqlite
+  - tk
+  - tzdata
+  - wheel
+  - xz
+  - zlib
+  - pip:
+      - alembic==1.14.0
+      - annotated-types==0.7.0
+      - anyio==4.8.0
+      - bcrypt==3.2.2
+      - cffi==1.17.1
+      - click==8.1.8
+      - colorama==0.4.6
+      - ecdsa==0.19.0
+      - fastapi==0.91.0
+      - greenlet==3.1.1
+      - h11==0.14.0
+      - idna==3.10
+      - mako==1.3.8
+      - markupsafe==3.0.2
+      - passlib==1.7.4
+      - pillow==11.1.0
+      - pyasn1==0.6.1
+      - pycparser==2.22
+      - pydantic==1.10.0
+      - pydantic-core==2.27.2
+      - python-jose==3.3.0
+      - python-multipart==0.0.20
+      - rsa==4.9
+      - six==1.17.0
+      - sniffio==1.3.1
+      - sqlalchemy==2.0.37
+      - starlette==0.24.0
+      - typing-extensions==4.12.2
+      - uvicorn==0.34.0
+
