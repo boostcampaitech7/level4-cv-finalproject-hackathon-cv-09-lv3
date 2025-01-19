@@ -9,9 +9,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import config
 from . import routers
+import socket
 
-api_server_url = f"http://{config.host}:{config.port}"
-# print("api_server_url:", api_server_url)
+
+# 외부에서 접속을 위한 ngrok url 하드코딩 추가
+
+if local_ip.startswith("192.") or local_ip.startswith("10.") or local_ip.startswith("172."):
+    api_server_url = f"http://{config.host}:{config.port}"
+else:
+    api_server_url "https://2bb5-120-50-75-70.ngrok-free.app/"
+
+
 servers = [
     dict(url=api_server_url, description="SuperNova AI API Server")
 ]
