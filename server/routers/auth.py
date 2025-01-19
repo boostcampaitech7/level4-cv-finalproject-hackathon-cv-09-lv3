@@ -1,5 +1,6 @@
 from .router import *
 from ..security import *
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/auth")
 
@@ -31,7 +32,13 @@ def login(
     access_token = create_access_token(token_data)
     # save_access_token(token_data)
     # response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True)
-    return Token(access_token=access_token)
+    headers = {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "69420",
+        "Authorization": f"Bearer {access_token}"
+    }
+    # return Token(access_token=access_token)
+    return JSONResponse(content={"access_token": access_token}, headers=headers)
 
 
 @router.get("/logout", dependencies=[Depends(jwt_scheme)])
