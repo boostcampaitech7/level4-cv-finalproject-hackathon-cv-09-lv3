@@ -59,7 +59,12 @@ class ProjectCreate(AssetCreate):
     ):
         return cls(name=name)
 
-
+class FileCreate(AssetCreate):
+    path: str
+    content_type: Optional[str]
+    project_id: Optional[int]
+    
+    
 class ProjectInfo(BaseModel):
     id: int
     name: str
@@ -70,6 +75,9 @@ class ProjectInfo(BaseModel):
 
 class Project(ProjectCreate, AssetBase):
     pass
+
+class File(FileCreate, AssetBase):
+    project: Optional[ProjectInfo]
 
 class UserCreate(SchemaCreate):
     email: str

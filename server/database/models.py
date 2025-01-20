@@ -15,6 +15,7 @@ class User(BaseModel):
     is_active = Column(Boolean, server_default="True")
 
     projects = relationship("Project", back_populates="owner")
+    files = relationship("File", back_populates="owner")
 
 class AssetMixin(object):
     @declared_attr
@@ -42,3 +43,8 @@ class Project(BaseModel, AssetMixin):
     pass
 
 
+class File(BaseModel, AssetMixin):
+    path = Column(String)
+    content_type = Column(String)
+
+    dataset_id = Column(Integer, ForeignKey(f"{Project.__tablename__}.id"))

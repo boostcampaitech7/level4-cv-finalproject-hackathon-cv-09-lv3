@@ -32,9 +32,7 @@ def user_file_storage_dir(id: int):
 
 def project_file_storage_dirs(owner_id: int, project_id: int):
     project_dir = user_file_storage_dir(owner_id) / f"project_{project_id}"
-    training_dir = project_dir / "training"
-    evaluation_dir = project_dir / "evaluation"
-    return project_dir, training_dir, evaluation_dir
+    return project_dir
 
 def get_image(image_path: any):
     content = BytesIO()
@@ -154,4 +152,7 @@ def get_user_by_email(db: DBSession, email: str) -> models.User:
 # Project management APIs
 #
 
+def get_project_stamp(owner_id: int, project_id: int):
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    return get_image(project_dir / "stamp.png")
 

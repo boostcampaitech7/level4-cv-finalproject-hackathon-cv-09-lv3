@@ -39,8 +39,22 @@ def upgrade():
     sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('file',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.Column('path', sa.String(), nullable=True),
+    sa.Column('content_type', sa.String(), nullable=True),
+    sa.Column('project_id', sa.Integer(), nullable=True),
+    sa.Column('name', sa.String(), nullable=True),
+    sa.Column('size', sa.Integer(), nullable=True),
+    sa.Column('owner_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['project_id'], ['project.id'], ),
+    sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
 
 def downgrade():
+    op.drop_table('file')
     op.drop_table('project')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
