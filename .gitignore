@@ -3,3 +3,6 @@ __pycache__/
 
 # SQLite 데이터베이스 파일 무시
 *.db
+
+# file_storage 폴더 무시
+file_storage/

@@ -1,10 +1,11 @@
 from fastapi import APIRouter as BaseRouter
 from fastapi import Depends, HTTPException, Request, status
-from fastapi import Form, UploadFile
+from fastapi import Form, UploadFile, File
 from fastapi.responses import StreamingResponse, PlainTextResponse
 from fastapi import FastAPI, BackgroundTasks
 # libs for type validation
 from typing import List
+import json
 
 from ..database import api as db_api
 from ..database.api import models, schemas, get_db, DBSession

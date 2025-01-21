@@ -44,7 +44,7 @@ class Project(BaseModel, AssetMixin):
 
 
 class File(BaseModel, AssetMixin):
-    path = Column(String)
+    # path = Column(String)
     content_type = Column(String)
 
-    dataset_id = Column(Integer, ForeignKey(f"{Project.__tablename__}.id"))
+    project_id = Column(Integer, ForeignKey(f"{Project.__tablename__}.id"))

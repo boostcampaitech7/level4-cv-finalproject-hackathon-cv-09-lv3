@@ -3,6 +3,7 @@ from pathlib import Path
 import shutil
 import re
 from datetime import datetime
+import os
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session as DBSession, Query
@@ -156,3 +157,36 @@ def get_project_stamp(owner_id: int, project_id: int):
     project_dir = project_file_storage_dirs(owner_id, project_id)
     return get_image(project_dir / "stamp.png")
 
+
+def save_files(db: DBSession, owner_id: int, project_id: int, files: List[schemas.UploadFile]):
+    saved_files = []
+    
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    os.makedirs(project_dir, exist_ok=True)
+
+    for file in files:
+        file_path = os.path.join(project_dir, file.filename)
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
+        saved_files.append(file_path)
+        
+        name = file.filename
+        size = 0 # 사이즈 예시
+        # path = file_path
+        content_type = file.content_type
+        
+        create(
+            db,
+            models.File,
+            schemas.FileCreate(
+                name=name,
+                size=size,
+                owner_id=owner_id,
+                # path=path,
+                content_type=content_type,
+                project_id=project_id,
+            ),
+            commit=True,
+        )
+
+    return saved_files
