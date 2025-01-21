@@ -7,14 +7,16 @@ crawling_data = pd.read_csv('data/blog_crawling_results_image_tag.csv')
 summary_data = pd.read_csv('data/cleaned_text_crawling_with_summary.csv')
 caption_data = pd.read_csv('data/blog_image_captions.csv')
 
-def generate_prompt(crawling_data,summary_data,caption_data):
+def generate_finetune_prompt(crawling_data,summary_data,caption_data):
     caption_data['blog'] = caption_data['image_path'].apply(lambda x: x.split('/')[0])
     caption_data['captions'] = caption_data['captions'].apply(lambda x: f"[{x}]")
 
     blog_captions = pd.DataFrame(caption_data.groupby('blog')['captions'].sum()).reset_index()
 
     blog_captions['index'] = blog_captions['blog'].apply(lambda x :int(x.split('_')[1]))
-    blog_captions = blog_captions.sort_values(by='index')
+    blog_captions = blog_captions.sort_values(by='index').reset_index(drop=True)
+
+    print(blog_captions['blog'])
 
     no_caption = []
     for i in summary_data['blog_number']:
@@ -54,12 +56,27 @@ def get_finetune_csv(data, return_csv = True):
         'Completion': data['contents']
     })
     if return_csv:
-        finetune_csv.to_csv('data/finetune_dataset.csv',index=False)
+        finetune_csv.to_csv('data/finetune_dataset.csv',index=False, encoding="utf-8-sig")
         print('save csv')
     else:
         return finetune_csv
 
-if __name__ == "__main__":
-    finetune_data = generate_prompt(crawling_data,summary_data,caption_data)
-    get_finetune_csv(finetune_data)
+def generate_inference_caption(inputs,captions):
+    country = inputs['meta_data']['Country/City'].split('/')[0]
+    city = inputs['meta_data']['Country/City'].split('/')[1]
+    year = inputs['meta_data']['date'].split('.')[0]
+    month = inputs['meta_data']['date'].split('.')[1]
+    with_who = inputs['meta_data']['with']
+    texts = inputs['texts']
+    sentences = [f'너는 여행블로그를 써주는 에이전트야. 나는 {year}년 {month}월 {with_who}와 함께 {country}의 {city}를 다녀왔어. 아래에 블로그에 들어갈 사진들에 대한 설명과 느낀점을 적어줄게. 이를 기반으로 한국어 여행 블로그를 작성해주고, 블로그 안에 각 이미지들의 배치 태그도 넣어줘.']
+    for i,(t,c) in enumerate(zip(texts,captions)):
+        caption_prompt = f'<image_{str(i)}>: \n 설명: {c} . \n 느낀점: {t}. \n'
+        sentences.append(caption_prompt)
+    prompts = '\n'.join(sentences)
+    return prompts
+
+
+
+        
+
 
