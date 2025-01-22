@@ -45,4 +45,50 @@ def deleteProject(id: int, db: DBSession = Depends(get_db)):
     return db_api.delete(db, models.Project, where)
 
 
+@router.post("/{id}/files")
+def saveProjectFiles(id:int, 
+                     input: List[UploadFile] = File(None), 
+                     db: DBSession = Depends(get_db),
+                     user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    saved_files = db_api.save_files(db, owner_id, id, input)
+    return {
+        "message": "Files uploaded successfully",
+    }
+
+
+@router.post("/{id}/descriptions")
+def saveProjectDescriptions(id:int, 
+                     input: List[UploadFile] = File(None), 
+                     db: DBSession = Depends(get_db),
+                     user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    saved_files = db_api.save_files(db, owner_id, id, input)
+    return {
+        "message": "Files uploaded successfully",
+    }
+
+
+@router.post("/{id}/blog")
+def saveProjectblog(id:int, 
+                     input: List[UploadFile] = File(None), 
+                     db: DBSession = Depends(get_db),
+                     user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    saved_blog = db_api.save_blog(db, owner_id, id, input)
+    return {
+        "message": "Files uploaded successfully",
+    }
+    
+@router.get("{id}", response_model=List[schemas.Project])
+def listProjectfiles(id:int,
+    offset: int = 0, limit: int = -1,
+    user: schemas.User = Depends(requireUser), db: DBSession = Depends(get_db)
+):
+    owner_id = user.id
+    where = dict(owner_id=owner_id, project_id=id)
+    return db_api.list(db, models.File, where=where, offset=offset, limit=limit)
+
+
+
 #[TODO] getStampImage, getResultImage, getResultAssay

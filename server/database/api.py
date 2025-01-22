@@ -190,3 +190,36 @@ def save_files(db: DBSession, owner_id: int, project_id: int, files: List[schema
         )
 
     return saved_files
+
+
+def save_blog(db: DBSession, owner_id: int, project_id: int, files: List[schemas.UploadFile]):
+    saved_files = []
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    blog_dir = project_dir / "blog"
+    os.makedirs(blog_dir, exist_ok=True)
+
+    for file in files:
+        file_path = os.path.join(blog_dir, file.filename)
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
+        saved_files.append(file_path)
+        
+        name = file.filename
+        size = 0 # 사이즈 예시
+        # path = file_path
+        # content_type = file.content_type
+        
+        create(
+            db,
+            models.File,
+            schemas.FileCreate(
+                name=name,
+                size=size,
+                owner_id=owner_id,
+                # path=path,
+                content_type="blog",
+                project_id=project_id,
+            ),
+            commit=True,
+        )
+    return saved_files
