@@ -10,7 +10,7 @@ from datasets import load_dataset
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
-from blog_image import dataset_for_train
+from data_utils.blog_image import dataset_for_train
 
 
 def my_collate_fn(batches):
@@ -20,15 +20,15 @@ class VLM():
     '''
     generate caption with Qwen2VL model
     '''
-    def __init__(self):
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    def __init__(self, model_path):
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         # default: Load the model on the available device(s)
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen2-VL-7B-Instruct", torch_dtype=torch.float16, device_map={"":"cuda:0"}
-        ).to(device)
+            model_path, torch_dtype=torch.float16, device_map={"":"cuda:0"}
+        ).to(self.device)
 
-        self.processor = AutoProcessor.from_pretrained("Qwen/Qwen2-VL-7B-Instruct")
+        self.processor = AutoProcessor.from_pretrained(model_path)
 
     def generate_caption(self, inputs):
         torch.cuda.empty_cache()

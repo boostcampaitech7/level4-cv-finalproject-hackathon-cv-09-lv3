@@ -1,7 +1,7 @@
 import requests
 
-from generate_caption import VLM
-from generate_prompt import generate_inference_caption
+from data_utils.generate_caption import VLM
+from data_utils.generate_prompt import generate_inference_caption
 from train_API import GetDemoExecutor
 
 def get_demo(prompt):
@@ -26,7 +26,8 @@ def get_demo(prompt):
     }
 
     print(preset_text)
-    completion_executor.execute(request_data)
+    request_text = completion_executor.execute(request_data)
+    return request_text
 
 def main(jsons,images):
     model = VLM()
