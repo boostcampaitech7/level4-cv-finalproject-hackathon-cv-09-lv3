@@ -1,11 +1,18 @@
-import React, { ChangeEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { ChangeEvent, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTravelContext } from "../context/TravelContext";
 import Layout from "./Layout";
+import { apiFetch } from "../api";
 
 function PhotoDescription() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // /upload에서 넘겨준 projectId
+  const { projectId } = (location.state as { projectId: number }) || {};
+
   const { photos, descriptions, setDescriptions } = useTravelContext();
+  const [error, setError] = useState("");
 
   const handleDescChange = (index: number, value: string) => {
     const newDescs = [...descriptions];
@@ -13,16 +20,32 @@ function PhotoDescription() {
     setDescriptions(newDescs);
   };
 
-  const handleGenerate = () => {
-    // 로딩 화면으로 이동하게
-    navigate("/loading");
+  const handleGenerate = async () => {
+    try {
+      setError("");
+
+      // 예: 백엔드에 사진별 description 저장
+      // POST /projects/{projectId}/descriptions
+      // body: { descriptions: [ "설명1", "설명2", ... ] }
+      await apiFetch(`/projects/${projectId}/descriptions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ descriptions }),
+      });
+
+      // 로딩 화면으로 이동 (AI 생성)
+      navigate("/loading", { state: { projectId } });
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
   return (
     <Layout>
-      {/* 예시예시 */}
       <div className="bg-white border border-gray-200 rounded-md p-6 shadow-sm space-y-6">
         <h1 className="text-2xl font-bold">사진 설명 작성</h1>
+        {error && <p className="text-red-500">{error}</p>}
+
         {photos.map((photo, index) => (
           <div key={index}>
             <p className="text-sm text-gray-500 mb-2">{photo.name}</p>
@@ -38,10 +61,7 @@ function PhotoDescription() {
           </div>
         ))}
 
-        <button
-          onClick={handleGenerate}
-          className="btn-primary mt-4"
-        >
+        <button onClick={handleGenerate} className="btn-primary mt-4">
           생성하기
         </button>
       </div>

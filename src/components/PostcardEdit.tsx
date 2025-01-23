@@ -2,6 +2,7 @@
 import React, { useEffect, useState, ChangeEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "./Layout";
+import { apiFetch } from "../api";
 
 interface Postcard {
   id: number;
@@ -13,49 +14,93 @@ function PostcardEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 서버에서 받아온 엽서 원본 데이터
   const [postcardData, setPostcardData] = useState<Postcard | null>(null);
-  // 편집 중인 타이틀/내용 (기본값은 postcardData를 불러온 뒤 채움)
+  const [error, setError] = useState("");
+
+  // 편집 폼 상태
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
+  // 1) 기존 데이터 불러오기
   useEffect(() => {
-    // 실제로는 서버에서 {id}에 해당하는 엽서 정보를 가져옴
-    // 여기서는 간단히 Mock 예시넣어둠
-    const fakeData: Postcard = {
-      id: Number(id),
-      title: "하와이 여행 엽서",
-      content:
-        "하와이의 아름다운 해변과 맛있는 음식, 여유로운 분위기를 즐겼습니다!",
-    };
-    setPostcardData(fakeData);
-    // 초기 값 설정
-    setTitle(fakeData.title);
-    setContent(fakeData.content);
+    async function fetchPostcard() {
+      if (!id) return;
+      try {
+        setError("");
+        // GET /projects/{id} => { id, name, content, ... }
+        const data = await apiFetch(`/projects/${id}`);
+
+        const mapped: Postcard = {
+          id: data.id,
+          title: data.name || "제목 없음",
+          content: data.content || "",
+        };
+        setPostcardData(mapped);
+
+        // 폼 초기값
+        setTitle(mapped.title);
+        setContent(mapped.content);
+      } catch (err: any) {
+        console.error("프로젝트 불러오기 실패:", err);
+        setError(err.message);
+      }
+    }
+    fetchPostcard();
   }, [id]);
 
-  const handleSave = () => {
-    // 실제 저장 로직 (API call, server update 등)
-    // 예: fetch(`/api/postcards/${id}`, { method: 'PUT', body: JSON.stringify({...}) })
-    // 저장이 완료되면 다시 상세 페이지로 이동하게
-    navigate(`/postcard/${id}`);
-  };
+  // 2) 저장하기
+  const handleSave = async () => {
+    if (!id) return;
+    try {
+      setError("");
 
-  if (!postcardData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+      // 백엔드: POST /projects/{id} => updateProject(id, values)
+      // values 에 name, content 등을 담아 전송
+      const values = {
+        name: title,
+        content: content, // 백엔드가 content 필드를 DB에 저장한다고 가정
+      };
+
+      await apiFetch(`/projects/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+
+      // 성공 시 상세 페이지로 이동
+      navigate(`/postcard/${id}`);
+    } catch (err: any) {
+      console.error("프로젝트 수정 실패:", err);
+      setError(err.message);
+    }
+  };
 
   const handleChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
   };
-
   const handleChangeContent = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
   };
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-red-500">오류 발생: {error}</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!postcardData) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p>로딩 중...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -71,7 +116,8 @@ function PostcardEdit() {
             </label>
             <input
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm
+                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               value={title}
               onChange={handleChangeTitle}
             />
@@ -82,7 +128,8 @@ function PostcardEdit() {
               내용
             </label>
             <textarea
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm
+                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               rows={5}
               value={content}
               onChange={handleChangeContent}
