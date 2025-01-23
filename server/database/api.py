@@ -155,7 +155,29 @@ def get_user_by_email(db: DBSession, email: str) -> models.User:
 
 def get_project_stamp(owner_id: int, project_id: int):
     project_dir = project_file_storage_dirs(owner_id, project_id)
-    return get_image(project_dir / "stamp.png")
+    stamp_path = project_dir / "stamp.png"
+    if os.path.exists(stamp_path):
+        return get_image(stamp_path)
+    else:
+        return get_image(file_storage_dir / "example_stamp.jpg")
+    
+def get_project_postcard(owner_id: int, project_id: int):
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    stamp_path = project_dir / "postcard.png"
+    if os.path.exists(stamp_path):
+        return get_image(stamp_path)
+    else:
+        return get_image(file_storage_dir / "postcard_example.png")
+    
+def get_project_blog(owner_id: int, project_id: int):
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    blog_path = project_dir / "blog.json"
+    media_type = "application/json"
+    filename = "blog.json"
+    if os.path.exists(blog_path):
+        return blog_path, media_type, filename
+    else:
+        return file_storage_dir / "blog_example.json", media_type, "blog_example.json"
 
 
 def save_files(db: DBSession, owner_id: int, project_id: int, files: List[schemas.UploadFile]):

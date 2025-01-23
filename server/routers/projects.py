@@ -90,5 +90,24 @@ def listProjectfiles(id:int,
     return db_api.list(db, models.File, where=where, offset=offset, limit=limit)
 
 
+@router.get("/{id}/project_stamp", response_class=StreamingResponse)
+def getProjectStamp(id: int, user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    thumb_data = db_api.get_project_stamp(owner_id, id)
+    return StreamingResponse(**thumb_data)
+
+
+@router.get("/{id}/project_postcard", response_class=StreamingResponse)
+def getProjectPostcard(id: int, user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    thumb_data = db_api.get_project_postcard(owner_id, id)
+    return StreamingResponse(**thumb_data)
+
+
+@router.get("/{id}/project_blog", response_class=StreamingResponse)
+def getProjectBlog(id: int, user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    path, media_type, filename = db_api.get_project_blog(owner_id, id)
+    return FileResponse(path=path, media_type=media_type, filename=filename)
 
 #[TODO] getStampImage, getResultImage, getResultAssay
