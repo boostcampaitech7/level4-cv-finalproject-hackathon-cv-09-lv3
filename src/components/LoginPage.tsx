@@ -42,7 +42,7 @@ function LoginPage() {
       formData.append("password", password);
 
       const response = await fetch(
-        "https://9415-223-130-141-5.ngrok-free.app/api/auth/login",
+        "https://e65b-223-130-141-5.ngrok-free.app/api/auth/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -75,52 +75,70 @@ function LoginPage() {
 
   return (
     <Layout>
-      <div className="login-page">
-        {/* 배경 애니메이션 */}
+      {/* 배경 애니메이션 */}
+      <div className="relative bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen flex items-center justify-center overflow-hidden">
         <div className="cloud cloud1"></div>
         <div className="cloud cloud2"></div>
         <div className="plane"></div>
 
-        <div className="flex flex-col items-center justify-center h-[70vh] z-10 relative">
-          <div className="w-full max-w-sm bg-white p-8 rounded-md shadow-md">
-            <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-              트래블로그 로그인
-            </h1>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  이메일
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  비밀번호
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                />
-              </div>
+        {/* 로그인 카드 */}
+        <div className="relative w-full max-w-md bg-white p-6 md:p-8 rounded-lg shadow-xl z-10">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6">
+            로그인
+          </h1>
 
-              <button
-                onClick={handleLogin}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors w-full mt-4"
-              >
-                로그인
-              </button>
-              {errorMessage && (
-                <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
-              )}
+          {/* 입력 필드 */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                이메일
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-4 py-2"
+                placeholder="email@example.com"
+              />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                비밀번호
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-4 py-2"
+                placeholder="●●●●●●●"
+              />
+            </div>
+
+            {/* 에러 메시지 */}
+            {errorMessage && (
+              <p className="text-sm text-red-500 mt-2">{errorMessage}</p>
+            )}
+
+            {/* 로그인 버튼 */}
+            <button
+              onClick={handleLogin}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow-md mt-4"
+            >
+              로그인
+            </button>
           </div>
+
+          {/* 추가 링크 */}
+          <p className="mt-4 text-sm text-center text-gray-600">
+            계정이 없으신가요?{" "}
+            <a
+              href="/register"
+              className="text-blue-500 hover:underline transition duration-200"
+            >
+              회원가입
+            </a>
+          </p>
         </div>
       </div>
     </Layout>
