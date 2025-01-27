@@ -6,6 +6,17 @@ import pandas as pd
 from tqdm import tqdm
 import time
 import requests
+import re
+
+def text_processing(text):
+    
+    if not isinstance(text, str):
+        print(text)
+        raise TypeError("Input must be a string")
+
+    pattern = re.compile(r"[^a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?~` ]")
+    return pattern.sub("", text)
+
 
 class CompletionExecutor:
     def __init__(self, host, api_key, request_id):
@@ -45,11 +56,15 @@ def papago(text):
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 
+    processed_texts = []
+    for t in text:
+        processed_texts.append(text_processing(t))
+
     # 반복 처리
     data = {
         'source': 'en',
         'target': 'ko',
-        'text': text
+        'text': processed_texts
     }
     response = requests.post(url, headers=headers, data=data)
     response_text = response.json()

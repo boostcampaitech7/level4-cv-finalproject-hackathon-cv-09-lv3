@@ -10,7 +10,7 @@ from datasets import load_dataset
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
-from data_utils.blog_image import dataset_for_train
+from .blog_image import dataset_for_train
 
 
 def my_collate_fn(batches):
@@ -44,7 +44,7 @@ class VLM():
 
         
     def generate_caption_from_csv(self, csv_path, image_path):
-        image_csv = pd.read_csv(csv_path)['blog_number']
+        image_csv = pd.read_csv(csv_path)['blog_number'][450:]
 
         image_paths = []
         for idx,strings in enumerate(image_csv):
@@ -53,7 +53,7 @@ class VLM():
             image_num = len(image_list)
             for i in range(1,image_num+1):
                 try: 
-                    image = [img for img in image_list if img.startswith('image_'+str(i)+'_')]
+                    image = [img for img in image_list if img.split('.')[0] == 'image_'+str(i)]
                     if image[0].endswith('gif'):
                         pass
                     else:
@@ -76,9 +76,10 @@ class VLM():
 
             if current_path != path.split('/')[0]:
                 print(current_path + '완료!')
-                caption_csv.to_csv('blog_image_captions.csv',index=False)
+                caption_csv.to_csv('blog_image_captions2_3.csv',index=False, encoding = 'utf-8-sig')
                 current_path = path.split('/')[0]
     
+        caption_csv.to_csv('blog_image_captions2_3.csv',index=False, encoding = 'utf-8-sig')
     def generate_caption_with_json(self,image):
         image = image.resize((512,512))
 
@@ -90,7 +91,7 @@ class VLM():
                         "type": "image",
                         "image": image
                     },
-                    {"type": "text", "text": "Please describe the image in detail.:"},
+                    {"type": "text", "text": "Describe this image in English:"},
                 ]
             },
         ]
@@ -112,4 +113,9 @@ class VLM():
 
         return caption
         
-            
+if __name__ == "__main__":
+    model_path = 'Qwen/Qwen2-VL-7B-Instruct'
+    csv = '/data/ephemeral/home/travel_blog/data/blog_images2/crawling/blog_crawling_results.csv'
+    path = "/data/ephemeral/home/travel_blog/data/blog_images2/blog_data/images"
+    vlm = VLM(model_path)
+    vlm.generate_caption_from_csv(csv,path)

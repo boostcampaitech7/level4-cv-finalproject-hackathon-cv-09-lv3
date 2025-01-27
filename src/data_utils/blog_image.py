@@ -5,6 +5,8 @@ from PIL import Image
 
 from qwen_vl_utils import process_vision_info
 
+Image.MAX_IMAGE_PIXELS = None
+
 class dataset_for_train(Dataset):
     def __init__(self,dataset,processor):
         self.ds = dataset
@@ -14,9 +16,8 @@ class dataset_for_train(Dataset):
         return len(self.ds)
 
     def __getitem__(self,idx):
-        if isinstance(self.ds, pd.DataFrame): 
-            data = self.ds[idx]
-        data_idx = os.path.join(data.split('/')[2],data.split('/')[3])
+        data = self.ds[idx]
+        data_idx = os.path.join(data.split('/')[-2],data.split('/')[-1])
         image = Image.open(data)
         image = image.resize((512,512))
 
@@ -36,7 +37,7 @@ class dataset_for_train(Dataset):
 
         return data_idx, inputs
     
-    def dataset_for_inference(self, image):
+    def generate_prompt(self, image):
 
         prompt = [
             {
@@ -46,7 +47,7 @@ class dataset_for_train(Dataset):
                         "type": "image",
                         "image": image
                     },
-                    {"type": "text", "text": "Please describe the image in detail.:"},
+                    {"type": "text", "text": "Describe this image in English:"},
                 ]
             },
         ]

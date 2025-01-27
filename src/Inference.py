@@ -2,24 +2,51 @@ import requests
 
 from data_utils.generate_caption import VLM
 from data_utils.generate_prompt import generate_inference_caption
-from train_API import GetDemoExecutor
 
-def get_demo(prompt):
+class GetDemoExecutor:
+    def __init__(self, host, api_key, request_id):
+        self._host = host
+        self._api_key = api_key
+        self._request_id = request_id
+
+    def execute(self, completion_request):
+        headers = {
+            "Authorization": "Bearer nv-17385a251c36440aab340ff38f8242e3EhLs",  # Replace with your actual API Key
+            "X-NCP-CLOVASTUDIO-REQUEST-ID": "ait7-nc02",  # Replace with your Request ID
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+        }
+
+        with requests.post(self._host + '/testapp/v2/tasks/efa0ojx3/chat-completions',
+                           headers=headers, json=completion_request, ) as r:
+            for i,line in enumerate(r.iter_lines()):
+                if line and i%4 == 2:
+                    text = line.decode("utf-8")
+                    if "result" in text:
+                        return text.split('"content":')[1].split('}')[0]
+                    else:
+                        pass
+                else: 
+                    pass
+
+
+
+def get_demo(system_prompt, prompt):
     completion_executor = GetDemoExecutor(
         host='https://clovastudio.stream.ntruss.com',
         api_key='Bearer nv-17385a251c36440aab340ff38f8242e3EhLs',
         request_id='ait7-nc02'
     )
 
-    preset_text = [{"role": "system", "content": "test"},
+    preset_text = [{"role": "system", "content": system_prompt},
                    {"role":"user","content": prompt}]
 
     request_data = {
         'messages': preset_text,
         'topP': 0.8,
         'topK': 0,
-        'maxTokens': 2048,
-        'temperature': 0.5,
+        'maxTokens': 1024,
+        'temperature': 0.3,
         'repeatPenalty': 5,
         'stopBefore': [],
         'includeAiFilters': True
