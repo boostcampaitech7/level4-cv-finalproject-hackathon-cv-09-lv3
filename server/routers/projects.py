@@ -69,16 +69,16 @@ def saveProjectDescriptions(id:int,
     }
 
 
-@router.post("/{id}/blog")
-def saveProjectblog(id:int, 
-                     input: List[UploadFile] = File(None), 
-                     db: DBSession = Depends(get_db),
-                     user: schemas.User = Depends(requireUser)):
-    owner_id = user.id
-    saved_blog = db_api.save_blog(db, owner_id, id, input)
-    return {
-        "message": "Files uploaded successfully",
-    }
+# @router.post("/{id}/blog")
+# def saveProjectblog(id:int, 
+#                      input: List[UploadFile] = File(None), 
+#                      db: DBSession = Depends(get_db),
+#                      user: schemas.User = Depends(requireUser)):
+#     owner_id = user.id
+#     saved_blog = db_api.save_blog(db, owner_id, id, input)
+#     return {
+#         "message": "Files uploaded successfully",
+#     }
     
 @router.get("{id}", response_model=List[schemas.Project])
 def listProjectfiles(id:int,
@@ -109,5 +109,29 @@ def getProjectBlog(id: int, user: schemas.User = Depends(requireUser)):
     owner_id = user.id
     path, media_type, filename = db_api.get_project_blog(owner_id, id)
     return FileResponse(path=path, media_type=media_type, filename=filename)
+
+
+@router.post("/{id}/image_url")
+def saveImageUrl(id: int,
+                 input:str,
+                 user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    saved_image_url = db_api.save_image_to_url(owner_id, id, input)
+    return {
+        "message": "images saved successfully",
+    }
+    
+
+@router.post("/{id}/project_blog")
+def modifyProjectBlog(id:int,
+                      input: UploadFile = File(...),
+                      user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    saved_blog = db_api.save_blog(owner_id, id, input)
+    return {
+        "message": "blog saved successfully",
+    }
+    
+
 
 #[TODO] getStampImage, getResultImage, getResultAssay

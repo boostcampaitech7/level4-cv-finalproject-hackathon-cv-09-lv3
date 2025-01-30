@@ -17,11 +17,16 @@ from .database import get_db, session_scope
 from . import models, schemas
 from ..security import get_password_hash
 
+import requests
+from threading import Lock
+
 PATH_SEP = "/"
 
 COLUMN_ID = "id"
 COLUMN_OWNER_ID = "owner_id"
 COLUMN_PATH = "path"
+
+INFERENCE_SERVER_URL = "https://b156-223-130-141-5.ngrok-free.app/predict"
 
 
 file_storage_dir = Path(__file__).parent.parent.parent / "file_storage"
@@ -214,34 +219,149 @@ def save_files(db: DBSession, owner_id: int, project_id: int, files: List[schema
     return saved_files
 
 
-def save_blog(db: DBSession, owner_id: int, project_id: int, files: List[schemas.UploadFile]):
-    saved_files = []
-    project_dir = project_file_storage_dirs(owner_id, project_id)
-    blog_dir = project_dir / "blog"
-    os.makedirs(blog_dir, exist_ok=True)
+# def save_blog(db: DBSession, owner_id: int, project_id: int, files: List[schemas.UploadFile]):
+#     saved_files = []
+#     project_dir = project_file_storage_dirs(owner_id, project_id)
+#     blog_dir = project_dir / "blog"
+#     os.makedirs(blog_dir, exist_ok=True)
 
-    for file in files:
-        file_path = os.path.join(blog_dir, file.filename)
-        with open(file_path, "wb") as f:
-            f.write(file.file.read())
-        saved_files.append(file_path)
+#     for file in files:
+#         file_path = os.path.join(blog_dir, file.filename)
+#         with open(file_path, "wb") as f:
+#             f.write(file.file.read())
+#         saved_files.append(file_path)
         
-        name = file.filename
-        size = 0 # 사이즈 예시
-        # path = file_path
-        # content_type = file.content_type
+#         name = file.filename
+#         size = 0 # 사이즈 예시
+#         # path = file_path
+#         # content_type = file.content_type
         
-        create(
-            db,
-            models.File,
-            schemas.FileCreate(
-                name=name,
-                size=size,
-                owner_id=owner_id,
-                # path=path,
-                content_type="blog",
-                project_id=project_id,
-            ),
-            commit=True,
-        )
-    return saved_files
+#         create(
+#             db,
+#             models.File,
+#             schemas.FileCreate(
+#                 name=name,
+#                 size=size,
+#                 owner_id=owner_id,
+#                 # path=path,
+#                 content_type="blog",
+#                 project_id=project_id,
+#             ),
+#             commit=True,
+#         )
+#     return saved_files
+
+def save_image_to_url(owner_id: int, project_id: int, image_url = str):
+    
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    os.makedirs(project_dir, exist_ok=True)
+    
+    save_path = os.path.join(project_dir, "postcard.png")
+    
+    response = requests.get(image_url, stream=True)
+    response.raise_for_status()
+    
+    image = Image.open(BytesIO(response.content))
+    
+    image.save(save_path)
+    print(f"이미지가 저장되었습니다: {save_path}")
+    
+def save_blog(owner_id: int, project_id: int, file: schemas.UploadFile):
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    os.makedirs(project_dir, exist_ok=True)
+    
+    save_path = os.path.join(project_dir, "blog.json")
+    with open(save_path, "wb") as f:
+        f.write(file.file.read())
+        
+    ##
+    # 혹시 모를 버전 관리 코드
+    ##
+        
+    # save_path = Path(project_dir) / "blog.json"
+    # timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    # backup_path = Path(project_dir) / f"blog_{timestamp}.json"
+
+    # # 기존 파일이 있으면 백업
+    # if save_path.exists():
+    #     os.rename(save_path, backup_path)
+
+    # with open(save_path, "wb") as f:
+    #     f.write(file.file.read())
+
+    # # 기존 백업 파일 목록 가져오기 (정렬 후 오래된 것 삭제)
+    # backup_files = sorted(Path(project_dir).glob("blog_*.json"), key=os.path.getctime, reverse=True)
+
+    # # 최근 max_backups 개만 유지
+    # for old_file in backup_files[max_backups:]:
+    #     os.remove(old_file)
+        
+    print(f"블로그가 수정정되었습니다: {save_path}")
+    
+#
+# Inference management APIs
+#
+task_status = {}
+task_lock = Lock()
+
+def process_prediction(db: DBSession, owner_id: int, project_id: int):
+    try:
+        print("Starting prediction process...")
+        
+        with task_lock:
+            task_status[id] = "in_progress"
+            
+        # 프로젝트 폴더 경로 가져오기
+        project_dir = project_file_storage_dirs(owner_id, project_id)
+        file_data = []
+
+        if os.path.exists(project_dir) and os.path.isdir(project_dir):
+            files = os.listdir(project_dir)
+            print(f"Files in directory: {project_dir}")
+            
+            # 모든 파일 처리
+            for file in files:
+                file_path = os.path.join(project_dir, file)
+                if os.path.isfile(file_path) and file.endswith(('.jpg', '.jpeg', '.png')):
+                    print(f"Adding file to request: {file}")
+                    file_data.append(('files', (file, open(file_path, 'rb'), "image/jpeg")))
+
+            # descriptions.json 파일 추가
+            json_file_path = os.path.join(project_dir, "descriptions.json")
+            if not os.path.exists(json_file_path):
+                raise FileNotFoundError(f"JSON file not found: {json_file_path}")
+
+            file_data.append(('jsons', ("descriptions.json", open(json_file_path, 'rb'), "application/json")))
+
+            # POST 요청 전송
+            response = requests.post(INFERENCE_SERVER_URL, files=file_data)
+            
+            print(f"Response from model_url: {response.status_code}")
+            print(f"Response headers: {response.headers}")
+            print(f"Response body: {response.text}")
+
+            # # 응답 데이터 검증
+            try:
+                response_data = response.json()  # JSON 파싱
+            except json.JSONDecodeError as e:
+                print(f"Failed to decode JSON response: {e}")
+                response_data = {"result": response.text}  # 비정상적인 응답 처리
+
+            # 응답 결과 저장
+            response_json_path = os.path.join(project_dir, "response.json")
+            with open(response_json_path, 'w', encoding='utf-8') as json_file:
+                json.dump(response_data, json_file, indent=4, ensure_ascii=False)
+            print(f"Response saved to JSON file: {response_json_path}")
+
+            # 작업 성공 시 상태 업데이트
+            with task_lock:
+                task_status[project_id] = "completed"
+
+        else:
+            raise FileNotFoundError(f"Project directory not found: {project_dir}")
+
+    except Exception as e:
+        print("Prediction process failed.")
+        with task_lock:
+            task_status[project_id] = "failed"
+        print(f"Error: {e}")
