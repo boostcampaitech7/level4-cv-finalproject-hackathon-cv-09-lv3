@@ -27,6 +27,7 @@ COLUMN_OWNER_ID = "owner_id"
 COLUMN_PATH = "path"
 
 INFERENCE_SERVER_URL = "https://b156-223-130-141-5.ngrok-free.app/predict"
+REDIS_URL = "https://6263-223-130-141-5.ngrok-free.app"
 
 
 file_storage_dir = Path(__file__).parent.parent.parent / "file_storage"
@@ -164,7 +165,7 @@ def get_project_stamp(owner_id: int, project_id: int):
     if os.path.exists(stamp_path):
         return get_image(stamp_path)
     else:
-        return get_image(file_storage_dir / "example_stamp.jpg")
+        return get_image(file_storage_dir / "example_stamp.png")
     
 def get_project_postcard(owner_id: int, project_id: int):
     project_dir = project_file_storage_dirs(owner_id, project_id)
@@ -176,9 +177,9 @@ def get_project_postcard(owner_id: int, project_id: int):
     
 def get_project_blog(owner_id: int, project_id: int):
     project_dir = project_file_storage_dirs(owner_id, project_id)
-    blog_path = project_dir / "blog.json"
+    blog_path = project_dir / "response.json"
     media_type = "application/json"
-    filename = "blog.json"
+    filename = "reponse.json"
     if os.path.exists(blog_path):
         return blog_path, media_type, filename
     else:
@@ -301,15 +302,23 @@ def save_blog(owner_id: int, project_id: int, file: schemas.UploadFile):
 #
 # Inference management APIs
 #
-task_status = {}
-task_lock = Lock()
+
+
+
+def update_redis_value(key, value):
+    response = requests.post(f"{API_URL}/set/{key}/{value}")
+    print(f"{key}/{value}")
+
+
+# task_status = {}
+# task_lock = Lock()
 
 def process_prediction(db: DBSession, owner_id: int, project_id: int):
     try:
         print("Starting prediction process...")
         
-        with task_lock:
-            task_status[id] = "in_progress"
+        # with task_lock:
+        #     task_status[id] = "in_progress"
             
         # 프로젝트 폴더 경로 가져오기
         project_dir = project_file_storage_dirs(owner_id, project_id)
@@ -354,14 +363,16 @@ def process_prediction(db: DBSession, owner_id: int, project_id: int):
             print(f"Response saved to JSON file: {response_json_path}")
 
             # 작업 성공 시 상태 업데이트
-            with task_lock:
-                task_status[project_id] = "completed"
+            # with task_lock:
+            #     task_status[project_id] = "completed"
+            update_redis_value(f"project_{project_id}", "finish")
 
         else:
             raise FileNotFoundError(f"Project directory not found: {project_dir}")
 
     except Exception as e:
         print("Prediction process failed.")
-        with task_lock:
-            task_status[project_id] = "failed"
+        # with task_lock:
+        #     task_status[project_id] = "failed"
+        update_redis_value(f"project_{project_id}", "failed")
         print(f"Error: {e}")
