@@ -5,7 +5,5 @@ import App from "./App";
 import "./index.css"; // Tailwind import ( @tailwind base; @tailwind components; @tailwind utilities; )
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
     <App />
-  </React.StrictMode>
 );

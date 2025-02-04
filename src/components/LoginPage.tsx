@@ -42,7 +42,7 @@ function LoginPage() {
       formData.append("password", password);
 
       const response = await fetch(
-        "https://e65b-223-130-141-5.ngrok-free.app/api/auth/login",
+        "https://bbfb-223-130-141-5.ngrok-free.app/api/auth/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },

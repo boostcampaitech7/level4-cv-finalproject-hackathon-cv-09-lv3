@@ -8,6 +8,7 @@ interface Postcard {
   id: number;
   title: string;
   content: string;
+  imageurl: string;
 }
 
 function PostcardDetail() {
@@ -15,6 +16,17 @@ function PostcardDetail() {
   const navigate = useNavigate();
   const [postcardData, setPostcardData] = useState<Postcard | null>(null);
   const [error, setError] = useState("");
+
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+
+  const handleShowContent = () => {
+    setShowContent(true);
+  };
+
+  const handleShowImage = () => {
+    setShowContent(false);
+  };
 
   // 엽서(프로젝트) 상세 조회
   useEffect(() => {
@@ -24,11 +36,15 @@ function PostcardDetail() {
         setError("");
         // GET /projects/{id}
         const data = await apiFetch(`/projects/${id}`);
+        const image = await apiFetch(`/projects/${id}/project_postcard`);
+        const imageUrl = URL.createObjectURL(image);
+        const blogJson = await apiFetch(`/projects/${id}/project_blog`);
         // 백엔드 응답 예) { id, name, content, ... }
         const mapped: Postcard = {
           id: data.id,
           title: data.name || "제목 없음",
-          content: data.content || "",
+          content: blogJson.result || "",
+          imageurl: imageUrl
         };
         setPostcardData(mapped);
       } catch (err: any) {
@@ -85,30 +101,68 @@ function PostcardDetail() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 p-4 flex flex-col items-center">
-        <div className="w-full max-w-2xl bg-white border border-gray-200 rounded-md p-6 shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            {postcardData.title}
-          </h1>
-          <p className="text-gray-700 mb-6">
-            {postcardData.content || "(내용이 없습니다.)"}
-          </p>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4">
+        {!showContent ? (
+          // 📌 엽서 스타일 (이미지 화면)
+          <div className="relative w-[1050px] h-[750px] flex justify-center items-center">
+            {/* 편지지 배경 */}
+            <div className="absolute w-full h-full bg-white border border-gray-300 rounded-lg shadow-2xl rotate-[-5deg]"></div>
 
-          <div className="flex space-x-4">
-            <button
-              onClick={handleEdit}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
-            >
-              수정하기
-            </button>
-            <button
-              onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded transition-colors"
-            >
-              삭제하기
-            </button>
+            {/* 이미지 */}
+            <div className="relative w-[960px] h-[660px] bg-white border border-gray-400 rounded-lg shadow-lg rotate-[2deg] overflow-hidden flex justify-center items-center">
+              {!isLoaded && (
+                <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300"></div>
+              )}
+              <img
+                src={postcardData.imageurl}
+                alt="Postcard"
+                className={`w-full h-full object-cover transition-opacity duration-1000 ${
+                  isLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                onLoad={() => setIsLoaded(true)}
+              />
+            </div>
+
+            {/* '글 보기' 버튼 - 오른쪽 아래 정렬 */}
+            <div className="absolute bottom-[-50px] right-[-20px]">
+              <button
+                onClick={handleShowContent}
+                className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded transition-colors shadow-md"
+              >
+                글 보기
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          // 📌 글 페이지 (심플한 디자인)
+          <div className="w-[800px] bg-white p-6 rounded-lg shadow-md">
+            <p className="text-gray-700 text-lg text-center mb-6">
+              {postcardData.content || "(내용이 없습니다.)"}
+            </p>
+
+            {/* 버튼들 - 오른쪽 정렬 */}
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={handleEdit}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition-colors shadow-md"
+              >
+                수정하기
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded transition-colors shadow-md"
+              >
+                삭제하기
+              </button>
+              <button
+                onClick={handleShowImage}
+                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded transition-colors shadow-md"
+              >
+                사진 보기
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

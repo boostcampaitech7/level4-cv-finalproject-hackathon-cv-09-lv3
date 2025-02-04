@@ -1,7 +1,7 @@
 // src/api.ts
 export const BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://e65b-223-130-141-5.ngrok-free.app/api";
+  "https://bbfb-223-130-141-5.ngrok-free.app/api";
 
 /** 토큰이 있으면 Authorization 헤더를 자동으로 붙여주는 fetch 래퍼 */
 export async function apiFetch(
@@ -41,7 +41,12 @@ export async function apiFetch(
   if (contentType.includes("application/json")) {
     // JSON 응답
     return response.json();
-  } else {
+  }
+  else if (contentType.startsWith("image/")) {
+  // 이미지 응답 (Blob으로 변환)
+    return response.blob();
+  }
+   else {
     // HTML 등 다른 형식
     const textData = await response.text();
     throw new Error(`서버가 JSON이 아닌 응답을 보냈습니다:\n${textData.slice(0, 200)}`);

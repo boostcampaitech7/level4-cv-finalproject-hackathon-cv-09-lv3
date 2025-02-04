@@ -1,4 +1,3 @@
-// src/components/PostcardStorage.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
@@ -7,37 +6,52 @@ import { apiFetch } from "../api";
 interface Postcard {
   id: number;
   title: string;
+  stampImage: string;
 }
 
-/**
- * 백엔드:
- *  - GET /projects => 로그인 사용자(JWT) 소유 프로젝트(엽서) 목록
- *  - (기존) PUT /projects 로 프로젝트 생성은 PhotoUpload.tsx에서 수행
- */
 function PostcardStorage() {
   const navigate = useNavigate();
   const [postcards, setPostcards] = useState<Postcard[]>([]);
   const [error, setError] = useState("");
 
-  // 사용자별 프로젝트 목록 가져오기
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 9;
+
+  const totalPages = Math.ceil(postcards.length / itemsPerPage);
+
+  const currentPostcards = postcards.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage
+  );
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
+  };
+
   useEffect(() => {
     async function fetchMyPostcards() {
       try {
         setError("");
-        // GET /projects
         const data = await apiFetch("/projects");
-        // data = [{ id, name, ... }, ...]
-        const mapped = data.map((item: any) => ({
-          id: item.id,
-          title: item.name || "제목 없음",
-        }));
+        const mapped = await Promise.all(
+          data.map(async (item: any) => {
+            const imageData = await apiFetch(`/projects/${item.id}/project_stamp`);
+            const imageUrl = URL.createObjectURL(imageData);
+            return {
+              id: item.id,
+              title: item.name || "제목 없음",
+              stampImage: imageUrl,
+            };
+          })
+        );
         setPostcards(mapped);
       } catch (err: any) {
         console.error("프로젝트 목록 불러오기 실패:", err);
-
-        // 토큰이 invalid하거나 expired인 경우
         if (err.message.includes("Invalid token") || err.message.includes("expired token")) {
-          // 로그인 페이지로 리다이렉트
           navigate("/");
         } else {
           setError(err.message);
@@ -47,15 +61,40 @@ function PostcardStorage() {
     fetchMyPostcards();
   }, [navigate]);
 
-  // "새로운 블로그 작성" => "/upload"로 이동
-  // 실제 프로젝트 생성은 PhotoUpload.tsx에서 (파일 업로드 + PUT /projects)
   const handleCreateBlog = () => {
     navigate("/upload");
   };
 
-  const handleSelectPostcard = (id: number) => {
-    // 보관함의 엽서를 클릭 -> 상세 페이지로
-    navigate(`/postcard/${id}`);
+  const handleSelectPostcard = async (id: number) => {
+    try {
+      // 현재 상태 확인
+      const response = await apiFetch(`/projects/${id}`, { method: "GET" });
+      const status = response.status;
+
+      // 상태에 따라 적절한 컴포넌트로 이동
+      switch (status) {
+        case "1": // 입력 이미지만 받은 상태
+          navigate("/description", { state: { projectId: id } });
+          break;
+        case "2": // 이미지마다 사용자 설명 받은 상태
+          navigate("/loading", { state: { projectId: id } });
+          break;
+        case "3": // 로딩 완료 후 엽서 선택 안 된 상태
+          navigate("/postcard-selection", { state: { projectId: id } });
+          break;
+        case "4": // response.json은 받았으나 생성하기를 안 누름
+          navigate("/blog-content", { state: { projectId: id } });
+          break;
+        case "5": // 최종 블로그 생성 완료 상태
+          navigate(`/postcard/${id}`);
+          break;
+        default:
+          alert("알 수 없는 상태입니다.");
+      }
+    } catch (err: any) {
+      console.error("상태 확인 실패:", err);
+      alert("프로젝트 상태를 확인할 수 없습니다.");
+    }
   };
 
   return (
@@ -72,18 +111,55 @@ function PostcardStorage() {
 
       {error && <p className="text-red-500">{error}</p>}
 
-      <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {postcards.map((pc) => (
-          <li
-            key={pc.id}
-            className="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => handleSelectPostcard(pc.id)}
+      <div className="relative w-full min-h-screen bg-gray-50 p-6 rounded-lg shadow-lg flex flex-col items-center">
+        <ul className="grid grid-cols-3 gap-6">
+          {currentPostcards.map((pc) => {
+            const randomRotation = Math.random() * 30 - 15;
+
+            return (
+              <li key={pc.id} className="relative flex justify-center items-center">
+                <div
+                  className="w-48 h-48 bg-transparent border-4 border-gray-700 rounded-full shadow-lg cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110"
+                  style={{ transform: `rotate(${randomRotation}deg)` }}
+                  onClick={() => handleSelectPostcard(pc.id)}
+                >
+                  <img
+                    src={pc.stampImage}
+                    alt="Postcard Stamp"
+                    className="w-full h-full object-cover rounded-full opacity-90 hover:opacity-100 transition-opacity"
+                  />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="flex justify-between items-center w-full mt-6">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
+            className={`px-4 py-2 rounded-full text-white font-semibold transition-colors ${
+              currentPage === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            <h2 className="text-lg font-bold text-gray-700 mb-1">{pc.title}</h2>
-            <p className="text-sm text-gray-500">자세히 보려면 클릭하세요.</p>
-          </li>
-        ))}
-      </ul>
+            ◀ 이전
+          </button>
+          <span className="text-gray-700 font-semibold">
+            {currentPage + 1} / {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages - 1}
+            className={`px-4 py-2 rounded-full text-white font-semibold transition-colors ${
+              currentPage === totalPages - 1
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            다음 ▶
+          </button>
+        </div>
+      </div>
     </Layout>
   );
 }
@@ -91,6 +167,7 @@ function PostcardStorage() {
 export default PostcardStorage;
 
 
+// // src/components/PostcardStorage.tsx
 // import React, { useEffect, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 // import Layout from "./Layout";
@@ -99,6 +176,7 @@ export default PostcardStorage;
 // interface Postcard {
 //   id: number;
 //   title: string;
+//   stampImage : string
 // }
 
 // /**
@@ -111,6 +189,25 @@ export default PostcardStorage;
 //   const [postcards, setPostcards] = useState<Postcard[]>([]);
 //   const [error, setError] = useState("");
 
+//   const [currentPage, setCurrentPage] = useState(0);
+//   const itemsPerPage = 9; // 한 페이지에 도장 9개
+
+//   const totalPages = Math.ceil(postcards.length / itemsPerPage);
+
+//   const currentPostcards = postcards.slice(
+//     currentPage * itemsPerPage,
+//     (currentPage + 1) * itemsPerPage
+//   );
+
+//   const handlePrevPage = () => {
+//     if (currentPage > 0) setCurrentPage(currentPage - 1);
+//   };
+
+//   // 다음 페이지로 이동
+//   const handleNextPage = () => {
+//     if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
+//   };
+
 //   // 사용자별 프로젝트 목록 가져오기
 //   useEffect(() => {
 //     async function fetchMyPostcards() {
@@ -119,18 +216,29 @@ export default PostcardStorage;
 //         // GET /projects
 //         const data = await apiFetch("/projects");
 //         // data = [{ id, name, ... }, ...]
-//         const mapped = data.map((item: any) => ({
-//           id: item.id,
-//           title: item.name || "제목 없음",
-//         }));
+//         const mapped = await Promise.all(data.map(async(item: any) => {
+//           const imageData = await apiFetch(`/projects/${item.id}/project_stamp`);
+//           const imageUrl = URL.createObjectURL(imageData);
+//           return{
+//             id: item.id,
+//             title: item.name || "제목 없음",
+//             stampImage: imageUrl
+//         }}));
 //         setPostcards(mapped);
 //       } catch (err: any) {
 //         console.error("프로젝트 목록 불러오기 실패:", err);
-//         setError(err.message);
+
+//         // 토큰이 invalid하거나 expired인 경우
+//         if (err.message.includes("Invalid token") || err.message.includes("expired token")) {
+//           // 로그인 페이지로 리다이렉트
+//           navigate("/");
+//         } else {
+//           setError(err.message);
+//         }
 //       }
 //     }
 //     fetchMyPostcards();
-//   }, []);
+//   }, [navigate]);
 
 //   // "새로운 블로그 작성" => "/upload"로 이동
 //   // 실제 프로젝트 생성은 PhotoUpload.tsx에서 (파일 업로드 + PUT /projects)
@@ -157,18 +265,63 @@ export default PostcardStorage;
 
 //       {error && <p className="text-red-500">{error}</p>}
 
-//       <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-//         {postcards.map((pc) => (
-//           <li
-//             key={pc.id}
-//             className="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-//             onClick={() => handleSelectPostcard(pc.id)}
+//       {/* 페이지 컨테이너 */}
+//       <div className="relative w-full min-h-screen bg-gray-50 p-6 rounded-lg shadow-lg flex flex-col items-center">
+//         {/* 도장 목록 (현재 페이지) */}
+//         <ul className="grid grid-cols-3 gap-6">
+//           {currentPostcards.map((pc) => {
+//             const randomRotation = Math.random() * 30 - 15; // -15 ~ +15도 랜덤 회전
+
+//             return (
+//               <li key={pc.id} className="relative flex justify-center items-center">
+//                 <div
+//                   className="w-48 h-48 bg-transparent border-4 border-gray-700 rounded-full shadow-lg cursor-pointer transition-transform duration-300 ease-in-out hover:scale-110"
+//                   style={{ transform: `rotate(${randomRotation}deg)` }} // 랜덤 회전 적용
+//                   onClick={() => handleSelectPostcard(pc.id)}
+//                 >
+//                   <img
+//                     src={pc.stampImage}
+//                     alt="Postcard Stamp"
+//                     className="w-full h-full object-cover rounded-full opacity-90 hover:opacity-100 transition-opacity"
+//                   />
+//                 </div>
+//               </li>
+//             );
+//           })}
+//         </ul>
+
+//         {/* 페이지 네비게이션 */}
+//         <div className="flex justify-between items-center w-full mt-6">
+//           {/* 이전 페이지 버튼 */}
+//           <button
+//             onClick={handlePrevPage}
+//             disabled={currentPage === 0}
+//             className={`px-4 py-2 rounded-full text-white font-semibold transition-colors ${
+//               currentPage === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+//             }`}
 //           >
-//             <h2 className="text-lg font-bold text-gray-700 mb-1">{pc.title}</h2>
-//             <p className="text-sm text-gray-500">자세히 보려면 클릭하세요.</p>
-//           </li>
-//         ))}
-//       </ul>
+//             ◀ 이전
+//           </button>
+
+//           {/* 페이지 번호 표시 */}
+//           <span className="text-gray-700 font-semibold">
+//             {currentPage + 1} / {totalPages}
+//           </span>
+
+//           {/* 다음 페이지 버튼 */}
+//           <button
+//             onClick={handleNextPage}
+//             disabled={currentPage === totalPages - 1}
+//             className={`px-4 py-2 rounded-full text-white font-semibold transition-colors ${
+//               currentPage === totalPages - 1
+//                 ? "bg-gray-400 cursor-not-allowed"
+//                 : "bg-blue-600 hover:bg-blue-700"
+//             }`}
+//           >
+//             다음 ▶
+//           </button>
+//         </div>
+//       </div>
 //     </Layout>
 //   );
 // }
