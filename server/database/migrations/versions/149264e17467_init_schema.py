@@ -36,6 +36,7 @@ def upgrade():
     sa.Column('size', sa.Integer(), nullable=True),
     sa.Column('modified', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('owner_id', sa.Integer(), nullable=True),
+    sa.Column('status', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['owner_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

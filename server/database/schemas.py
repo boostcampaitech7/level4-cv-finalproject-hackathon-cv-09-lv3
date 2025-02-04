@@ -50,14 +50,16 @@ class AssetBase(SchemaBase):
 
 
 class ProjectCreate(AssetCreate):
+    status : str
 
     @classmethod
     def as_form(
         cls,
-        name: str = Form(), 
+        name: str = Form(),
+        status : str = Form() 
         # owner_id: Optional[int] = Form(default=None),
     ):
-        return cls(name=name)
+        return cls(name=name, status=status)
 
 class FileCreate(AssetCreate):
     # path: str

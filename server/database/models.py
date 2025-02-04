@@ -40,7 +40,7 @@ class AssetMixin(object):
 
 
 class Project(BaseModel, AssetMixin):
-    pass
+    status = Column(String)
 
 
 class File(BaseModel, AssetMixin):

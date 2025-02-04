@@ -25,6 +25,7 @@ projects = (
         owner = 'SuperNova',
         owner_id=2,
         created=datetime(2024, 10, 1, 10, 3),
+        status = 'finish'
     ),
     schemas.ProjectCreate(
         name="trip_2",
@@ -33,5 +34,6 @@ projects = (
         owner = 'Aespa',
         owner_id=1,
         created=datetime(2024, 10, 1, 10, 3),
+        status = 'finish'
     ),
 )

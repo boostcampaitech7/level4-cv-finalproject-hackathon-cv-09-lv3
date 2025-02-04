@@ -39,6 +39,13 @@ def updateProject(id: int, values: dict, db: DBSession = Depends(get_db)):
     return db_api.update(db, models.Project, where, values)
 
 
+@router.post("/{id}/status", response_model=int)
+def updateProjectStatus(id: int, status: str, db: DBSession = Depends(get_db)):
+    where = dict(id=id)
+    values = {'status': status}
+    return db_api.update(db, models.Project, where, values)
+
+
 @router.delete("/{id}", response_model=int)
 def deleteProject(id: int, db: DBSession = Depends(get_db)):
     where = dict(id=id)
