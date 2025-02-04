@@ -94,14 +94,22 @@ def listProjectfiles(id:int,
 def getProjectStamp(id: int, user: schemas.User = Depends(requireUser)):
     owner_id = user.id
     thumb_data = db_api.get_project_stamp(owner_id, id)
-    return StreamingResponse(**thumb_data)
+    headers = {
+        "Cache-Control": "public, max-age=86400",  # 24시간 캐싱
+        "Content-Type": "image/png"
+    }
+    return StreamingResponse(**thumb_data,headers=headers)
 
 
 @router.get("/{id}/project_postcard", response_class=StreamingResponse)
 def getProjectPostcard(id: int, user: schemas.User = Depends(requireUser)):
     owner_id = user.id
     thumb_data = db_api.get_project_postcard(owner_id, id)
-    return StreamingResponse(**thumb_data)
+    headers = {
+        "Cache-Control": "public, max-age=86400",  # 24시간 캐싱
+        "Content-Type": "image/png"
+    }
+    return StreamingResponse(**thumb_data,headers=headers)
 
 
 @router.get("/{id}/project_blog", response_class=StreamingResponse)
@@ -132,6 +140,23 @@ def modifyProjectBlog(id:int,
         "message": "blog saved successfully",
     }
     
+    
+    
+# @router.get("/{id}/input_images", response_class=StreamingResponse)
+# def getProjectPostcard(id: int, user: schemas.User = Depends(requireUser)):
+#     owner_id = user.id
+#     images = db_api.get_project_postcards(owner_id, id)
+    
+#     def generate():
+#         for img_data in images:
+#             yield (b"--frame\r\n"
+#                    b"Content-Type: image/png\r\n\r\n" + img_data + b"\r\n")
+            
+#     headers = {
+#         "Cache-Control": "public, max-age=86400",  # 24시간 캐싱
+#         "Content-Type": "image/png"
+#     }
+#     return StreamingResponse(generate(),headers=headers)
 
 
 #[TODO] getStampImage, getResultImage, getResultAssay

@@ -18,7 +18,9 @@ from . import models, schemas
 from ..security import get_password_hash
 
 import requests
-from threading import Lock
+# from threading import Lock
+from functools import wraps
+
 
 PATH_SEP = "/"
 
@@ -26,7 +28,7 @@ COLUMN_ID = "id"
 COLUMN_OWNER_ID = "owner_id"
 COLUMN_PATH = "path"
 
-INFERENCE_SERVER_URL = "https://b156-223-130-141-5.ngrok-free.app/predict"
+INFERENCE_SERVER_URL = "https://cc1f-223-130-141-5.ngrok-free.app/predict"
 REDIS_URL = "https://6263-223-130-141-5.ngrok-free.app"
 
 
@@ -174,6 +176,9 @@ def get_project_postcard(owner_id: int, project_id: int):
         return get_image(stamp_path)
     else:
         return get_image(file_storage_dir / "postcard_example.png")
+
+# def get_project_postcards(owner_id: int, project_id: int):
+#     project_dir = project_file_storage_dirs(owner_id, project_id)
     
 def get_project_blog(owner_id: int, project_id: int):
     project_dir = project_file_storage_dirs(owner_id, project_id)
@@ -302,77 +307,97 @@ def save_blog(owner_id: int, project_id: int, file: schemas.UploadFile):
 #
 # Inference management APIs
 #
-
-
-
-def update_redis_value(key, value):
-    response = requests.post(f"{API_URL}/set/{key}/{value}")
-    print(f"{key}/{value}")
-
-
 # task_status = {}
 # task_lock = Lock()
 
-def process_prediction(db: DBSession, owner_id: int, project_id: int):
+def handle_exceptions(func):
+    """ 예외 처리 데코레이터 """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except FileNotFoundError as e:
+            print(f"File not found: {e}")
+        except json.JSONDecodeError as e:
+            print(f"JSON decoding error: {e}")
+        except requests.RequestException as e:
+            print(f"Request failed: {e}")
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+    return wrapper
+
+
+def update_redis_value(key, value):
+    response = requests.post(f"{REDIS_URL}/set/{key}/{value}")
+    print(f"{key}/{value}")
+
+
+def fetch_project_files(owner_id: int, project_id: int):
+    """ 프로젝트 폴더에서 이미지 및 JSON 파일을 불러오는 함수 """
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    file_data = []
+
+    if not os.path.exists(project_dir) or not os.path.isdir(project_dir):
+        raise FileNotFoundError(f"Project directory not found: {project_dir}")
+
+    files = os.listdir(project_dir)
+    print(f"Files in directory: {project_dir}")
+
+    # 이미지 파일 추가
+    for file in files:
+        file_path = os.path.join(project_dir, file)
+        if os.path.isfile(file_path) and file.endswith(('.jpg', '.jpeg', '.png')):
+            print(f"Adding file to request: {file}")
+            file_data.append(('files', (file, open(file_path, 'rb'), "image/jpeg")))
+
+    # JSON 파일 추가
+    json_file_path = os.path.join(project_dir, "descriptions.json")
+    if not os.path.exists(json_file_path):
+        raise FileNotFoundError(f"JSON file not found: {json_file_path}")
+
+    file_data.append(('jsons', ("descriptions.json", open(json_file_path, 'rb'), "application/json")))
+
+    return file_data, project_dir
+
+
+@handle_exceptions
+def send_request(file_data):
+    """ 모델 서버로 요청을 보내고 응답을 반환하는 함수 """
+    response = requests.post(INFERENCE_SERVER_URL, files=file_data)
+    print(f"Response from model_url: {response.status_code}")
+    print(f"Response headers: {response.headers}")
+    print(f"Response body: {response.text}")
+
     try:
-        print("Starting prediction process...")
-        
+        response_data = response.json()  # JSON 파싱
+    except json.JSONDecodeError:
+        response_data = {"result": response.text}  # 비정상적인 응답 처리
+    
+    return response_data
+
+
+@handle_exceptions
+def process_prediction(db: DBSession, owner_id: int, project_id: int):
+    """ 전체 예측 프로세스를 실행하는 함수 """
+    print("Starting prediction process...")
+    
+    # with task_lock:
+    #     task_status[project_id] = "in_progress"
+
+    file_data, project_dir = fetch_project_files(owner_id, project_id)
+    
+    response_data = send_request(file_data)
+
+    if response_data:
+        response_json_path = os.path.join(project_dir, "response.json")
+        with open(response_json_path, 'w', encoding='utf-8') as json_file:
+            json.dump(response_data, json_file, indent=4, ensure_ascii=False)
+        print(f"Response saved to JSON file: {response_json_path}")
+
         # with task_lock:
-        #     task_status[id] = "in_progress"
-            
-        # 프로젝트 폴더 경로 가져오기
-        project_dir = project_file_storage_dirs(owner_id, project_id)
-        file_data = []
+        #     task_status[project_id] = "completed"
+        update_redis_value(f"project_{project_id}", "finish")
 
-        if os.path.exists(project_dir) and os.path.isdir(project_dir):
-            files = os.listdir(project_dir)
-            print(f"Files in directory: {project_dir}")
-            
-            # 모든 파일 처리
-            for file in files:
-                file_path = os.path.join(project_dir, file)
-                if os.path.isfile(file_path) and file.endswith(('.jpg', '.jpeg', '.png')):
-                    print(f"Adding file to request: {file}")
-                    file_data.append(('files', (file, open(file_path, 'rb'), "image/jpeg")))
-
-            # descriptions.json 파일 추가
-            json_file_path = os.path.join(project_dir, "descriptions.json")
-            if not os.path.exists(json_file_path):
-                raise FileNotFoundError(f"JSON file not found: {json_file_path}")
-
-            file_data.append(('jsons', ("descriptions.json", open(json_file_path, 'rb'), "application/json")))
-
-            # POST 요청 전송
-            response = requests.post(INFERENCE_SERVER_URL, files=file_data)
-            
-            print(f"Response from model_url: {response.status_code}")
-            print(f"Response headers: {response.headers}")
-            print(f"Response body: {response.text}")
-
-            # # 응답 데이터 검증
-            try:
-                response_data = response.json()  # JSON 파싱
-            except json.JSONDecodeError as e:
-                print(f"Failed to decode JSON response: {e}")
-                response_data = {"result": response.text}  # 비정상적인 응답 처리
-
-            # 응답 결과 저장
-            response_json_path = os.path.join(project_dir, "response.json")
-            with open(response_json_path, 'w', encoding='utf-8') as json_file:
-                json.dump(response_data, json_file, indent=4, ensure_ascii=False)
-            print(f"Response saved to JSON file: {response_json_path}")
-
-            # 작업 성공 시 상태 업데이트
-            # with task_lock:
-            #     task_status[project_id] = "completed"
-            update_redis_value(f"project_{project_id}", "finish")
-
-        else:
-            raise FileNotFoundError(f"Project directory not found: {project_dir}")
-
-    except Exception as e:
-        print("Prediction process failed.")
-        # with task_lock:
-        #     task_status[project_id] = "failed"
+    else:
         update_redis_value(f"project_{project_id}", "failed")
-        print(f"Error: {e}")
+        print("Prediction process failed.")
