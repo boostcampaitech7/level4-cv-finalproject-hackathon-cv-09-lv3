@@ -119,6 +119,18 @@ def getProjectPostcard(id: int, user: schemas.User = Depends(requireUser)):
     return StreamingResponse(**thumb_data,headers=headers)
 
 
+@router.get("/{id}/{name}/image", response_class=StreamingResponse)
+def getProjectImage(id: int, name: str, user: schemas.User = Depends(requireUser)):
+    owner_id = user.id
+    thumb_data = db_api.get_project_image(owner_id, id, name)
+    headers = {
+        "Cache-Control": "public, max-age=86400",  # 24시간 캐싱
+        "Content-Type": "image/png"
+    }
+    return StreamingResponse(**thumb_data,headers=headers)
+
+
+
 @router.get("/{id}/project_blog", response_class=StreamingResponse)
 def getProjectBlog(id: int, user: schemas.User = Depends(requireUser)):
     owner_id = user.id

@@ -176,6 +176,14 @@ def get_project_postcard(owner_id: int, project_id: int):
         return get_image(stamp_path)
     else:
         return get_image(file_storage_dir / "postcard_example.png")
+    
+def get_project_image(owner_id: int, project_id: int, name: str):
+    project_dir = project_file_storage_dirs(owner_id, project_id)
+    image_path = project_dir / name
+    if os.path.exists(image_path):
+        return get_image(image_path)
+    else:
+        return get_image(file_storage_dir / "example_image.png")
 
 # def get_project_postcards(owner_id: int, project_id: int):
 #     project_dir = project_file_storage_dirs(owner_id, project_id)
@@ -223,39 +231,6 @@ def save_files(db: DBSession, owner_id: int, project_id: int, files: List[schema
         )
 
     return saved_files
-
-
-# def save_blog(db: DBSession, owner_id: int, project_id: int, files: List[schemas.UploadFile]):
-#     saved_files = []
-#     project_dir = project_file_storage_dirs(owner_id, project_id)
-#     blog_dir = project_dir / "blog"
-#     os.makedirs(blog_dir, exist_ok=True)
-
-#     for file in files:
-#         file_path = os.path.join(blog_dir, file.filename)
-#         with open(file_path, "wb") as f:
-#             f.write(file.file.read())
-#         saved_files.append(file_path)
-        
-#         name = file.filename
-#         size = 0 # 사이즈 예시
-#         # path = file_path
-#         # content_type = file.content_type
-        
-#         create(
-#             db,
-#             models.File,
-#             schemas.FileCreate(
-#                 name=name,
-#                 size=size,
-#                 owner_id=owner_id,
-#                 # path=path,
-#                 content_type="blog",
-#                 project_id=project_id,
-#             ),
-#             commit=True,
-#         )
-#     return saved_files
 
 def save_image_to_url(owner_id: int, project_id: int, image_url = str):
     
