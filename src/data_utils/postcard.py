@@ -1,6 +1,7 @@
 import csv
 import os
 from openai import OpenAI
+import re
 
 MAX_PROMPT_LENGTH = 1000
 
@@ -78,9 +79,24 @@ def generate_postcard(api_key, prompt, model="dall-e-3", size="1024x1024", quali
 def generate_prompt(inputs,captions):
     place = inputs['meta_data']['Country/City']
     # 프롬프트 생성
+    postcard_captions = []
+    phrases_to_remove = [
+    'The image depicts', 'The image shows', 'The image appears',
+    'This image appears', 'This image is', 'The image features',
+    'The image captures', 'The image is', 'The image contains',
+    'In the image,', 'This image depicts', 'The image displays',
+    'The image showcases', 'This image shows'
+    ]
+    
+    # 불필요 문구 제거
+    for caption in captions:    
+        pattern = r'\b(?:' + '|'.join(re.escape(phrase) for phrase in phrases_to_remove) + r')\b'
+        cleaned_text = re.sub(pattern, '', caption, flags=re.IGNORECASE).strip()
+        postcard_captions.append(cleaned_text)
+
     prompt = (
         f"An illustration that tells a story about photos taken on a trip to {place}.\n"
-        f"The descriptions of the photos are as follows: {', '.join(captions)}"
+        f"The descriptions of the photos are as follows: {', '.join(postcard_captions)}"
     )
     # 프롬프트 길이 제한 적용
     prompt = truncate_prompt(prompt, MAX_PROMPT_LENGTH)

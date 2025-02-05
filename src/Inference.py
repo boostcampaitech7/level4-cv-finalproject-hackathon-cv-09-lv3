@@ -17,7 +17,7 @@ class GetDemoExecutor:
             "Accept": "text/event-stream",
         }
 
-        with requests.post(self._host + '/testapp/v2/tasks/efa0ojx3/chat-completions',
+        with requests.post(self._host + '/testapp/v1/chat-completions/HCX-003',
                            headers=headers, json=completion_request, ) as r:
             for i,line in enumerate(r.iter_lines()):
                 if line and i%4 == 2:
@@ -49,11 +49,13 @@ def get_demo(system_prompt, prompt):
         'temperature': 0.3,
         'repeatPenalty': 5,
         'stopBefore': [],
-        'includeAiFilters': True
+        'includeAiFilters': True,
+        'seed': 0
     }
 
     print(preset_text)
     request_text = completion_executor.execute(request_data)
+
     return request_text
 
 def main(jsons,images):
@@ -66,7 +68,9 @@ def main(jsons,images):
     
     assert len(jsons['text']) == len(captions)
     prompt = generate_inference_caption(jsons,captions)
-    get_demo(prompt)
+    request_text =get_demo(prompt)
+    #results = postprocessing(request_text, files)
+    
 
 if __name__ == "__main__":
     main()

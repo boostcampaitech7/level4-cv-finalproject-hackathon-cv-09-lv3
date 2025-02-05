@@ -10,7 +10,10 @@ from datasets import load_dataset
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
 from qwen_vl_utils import process_vision_info
 
-from .blog_image import dataset_for_train
+try:
+    from .blog_image import dataset_for_train
+except:
+    from blog_image import dataset_for_train
 
 
 def my_collate_fn(batches):
@@ -80,7 +83,8 @@ class VLM():
                 current_path = path.split('/')[0]
     
         caption_csv.to_csv('blog_image_captions2_3.csv',index=False, encoding = 'utf-8-sig')
-    def generate_caption_with_json(self,image):
+
+    def generate_caption_for_blog(self,image):
         image = image.resize((512,512))
 
         prompt = [
@@ -92,6 +96,39 @@ class VLM():
                         "image": image
                     },
                     {"type": "text", "text": "Describe this image in English:"},
+                ]
+            },
+        ]
+        
+        text = self.processor.apply_chat_template(
+            prompt, tokenize=False, add_generation_prompt=True
+        )
+        image_inputs, video_inputs = process_vision_info(prompt)
+        inputs = self.processor(
+            text=[text],
+            images=image_inputs,
+            videos=video_inputs,
+            padding=True,
+            return_tensors="pt",
+            truncation=True
+        )
+
+        caption = self.generate_caption(inputs)
+
+        return caption
+    
+    def generate_caption_for_dalle(self,image):
+        image = image.resize((512,512))
+
+        prompt = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "image": image
+                    },
+                    {"type": "text", "text": "Caption for DALL-E in English:"},
                 ]
             },
         ]

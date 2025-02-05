@@ -51,8 +51,8 @@ def papago(text):
     # API 정보
     url = 'https://naveropenapi.apigw.ntruss.com/nmt/v1/translation'
     headers = {
-        'X-NCP-APIGW-API-KEY-ID': 'mbxkxfsxqq',
-        'X-NCP-APIGW-API-KEY': 'V8tk8q4M8TlrSMUovV7lZ40XVwFFtSfAv1Gxopat',
+        'X-NCP-APIGW-API-KEY-ID': '5odl1lmj7o',
+        'X-NCP-APIGW-API-KEY': 'DU3KEwLdgUMUKED6NcWhc10xUfcZ8CYJAGVxB6Br',
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 
@@ -79,18 +79,18 @@ def papago(text):
     return response_text
 
 if __name__ == '__main__':
-    text_csv = pd.read_csv('data/cleaned_text_crawling.csv')
+    text_csv = pd.read_csv('blog_data/kimi_blog_crawling_results.csv')[4*50:12*50]
 
     
     completion_executor = CompletionExecutor(
         host='clovastudio.stream.ntruss.com',
-        api_key='Bearer nv-b506cff902b14a71882c5b46e031553dP4FS',
+        api_key='Bearer nv-17385a251c36440aab340ff38f8242e3EhLs',
         request_id='28f8fee200ea4babbf18fc2391659072'
     )
 
     response_texts = []
-    for j in range(20):
-        for i in tqdm(text_csv['content'][j*50:(j+1)*50]):
+    for j in range(4,12):
+        for i in tqdm(text_csv['content']):
             if len(i) > 35000:
                 i = i[:35000]
             request_data = json.loads(f'''{{
@@ -109,4 +109,4 @@ if __name__ == '__main__':
             response_texts.append(response_text)
     
     text_csv['summary'] = response_texts
-    text_csv.to_csv('data/cleaned_text_crawling_with_summary.csv',index=False)
+    text_csv.to_csv('blog_data/kimi_summary_200_600.csv',index=False)
