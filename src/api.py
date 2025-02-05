@@ -15,7 +15,7 @@ router = APIRouter()
 class PredictionResponse(BaseModel):
     result: str
     image: List[HttpUrl]
-    #stamp: List[HttpUrl]
+    stamp: List[HttpUrl]
 
 @router.post("/predict")
 def predict(files: List[UploadFile] = File(...),
@@ -58,10 +58,16 @@ def predict(files: List[UploadFile] = File(...),
     #results = get_blog(input_json,captions,files)
     #postcard_urls = get_dalle(model, images, input_json)    
 
-    results, postcard_urls = multi_process(model,images,input_json,captions,files)
+    results, postcard_urls, stamp_urls = multi_process(model,images,input_json,captions,files)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(elapsed_time)
     
-    return PredictionResponse(result = results, image = postcard_urls)
+    return PredictionResponse(result = results, image = postcard_urls, stamp = stamp_urls)
+
+@router.post("/modify")
+def predict(user_prompt: str = File(...),
+            blog_text: str = File(...)) -> PredictionResponse:
+    
+    convert_style(sample_prompt, sample_text)

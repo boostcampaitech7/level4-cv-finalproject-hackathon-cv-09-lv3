@@ -30,6 +30,9 @@ system_prompt = '''
 5. "너무 좋았어요!", "완전 만족했어요!", "정말 인상적이었답니다." 등 긍정적인 표현과 감탄사를 적절히 사용해 글의 분위기를 밝게 할 것.
 
 위의 사항을 모두 포함해 글을 작성하시오. 만일 이에 위배될 경우 당신은 10년 이하의 징역, 1000만원 이상의 벌금을 부여받게 됩니다.
+
+
+<<블로그 작성 정보: 이미지와 요약>>
 '''
 
 def generate_finetune_prompt(crawling_data,summary_data,caption_data, max_caption = 4, max_image = 10, return_csv = False):
@@ -149,7 +152,7 @@ def get_finetune_csv(data, return_csv = True):
         'Completion': data['contents']
     })
     if return_csv:
-        finetune_csv.to_csv('data/finetune_dataset_kimi_caption.csv',index=False, encoding="utf-8-sig")
+        finetune_csv.to_csv('data/finetune_dataset_kimi_caption_ver2.csv',index=False, encoding="utf-8-sig")
         print('save csv')
     else:
         return finetune_csv
@@ -174,6 +177,7 @@ if __name__ == "__main__":
     summary_data = pd.read_csv('blog_data/kimi_crawling_with_summary.csv')
     caption_data = pd.read_csv('blog_data/blog_caption_kimi.csv')
     finetuning_data = generate_finetune_prompt(crawling_data,summary_data,caption_data,return_csv=True)
+    finetuning_data = post_processing(finetuning_data)
     get_finetune_csv(finetuning_data)
         
 

@@ -122,6 +122,6 @@ def multi_process(model,images,input_json,captions,files):
 
         blog_results = blog.result()
         dalle_results = dalle.result()
-        #stamp_results = stamp.result()
+        stamp_results = stamp.result()
 
-    return blog_results, dalle_results
+    return blog_results, dalle_results, stamp_results
