@@ -38,8 +38,8 @@ def get_demo(system_prompt, prompt):
         request_id='ait7-nc02'
     )
 
-    preset_text = [{"role": "system", "content": system_prompt + prompt},
-                   {"role":"user","content": "주어진 정보와 규칙에 맞게 블로그를 작성해주세요."}]
+    preset_text = [{"role": "system", "content": system_prompt},
+                   {"role":"user","content":  prompt}]
 
     request_data = {
         'messages': preset_text,

@@ -21,7 +21,7 @@ def generate_stamp_image(api_key: str, final_prompt: str) -> str:
     )
     
     image_url = response.data[0].url
-    return image_url
+    return [image_url]
 
 
 def create_stamp(api_key: str, input_json: json) -> None:

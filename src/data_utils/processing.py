@@ -102,9 +102,9 @@ def get_dalle(input_json,captions):
 
     postcard_urls = []
 
-    for i in range(3):
+    '''for i in range(3):
         postcard_url = generate_postcard(OPEN_AI_KEY, postcard_prompt)
-        postcard_urls.append(postcard_url)
+        postcard_urls.append(postcard_url)'''
     
     dalle_finish = time.perf_counter()
     print(f'Finished dalle {round(dalle_finish-dalle_start, 2)} second(s)')

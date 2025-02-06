@@ -9,6 +9,7 @@ from pydantic import BaseModel,HttpUrl
 
 from FAST_API.dependencies import get_model
 from data_utils.processing import preprocessing,get_blog,get_dalle, multi_process
+from data_utils.converter import convert_style
 
 router = APIRouter()
 
@@ -16,6 +17,9 @@ class PredictionResponse(BaseModel):
     result: str
     image: List[HttpUrl]
     stamp: List[HttpUrl]
+
+class ModificationResponse(BaseModel):
+    result: str
 
 @router.post("/predict")
 def predict(files: List[UploadFile] = File(...),
@@ -67,7 +71,16 @@ def predict(files: List[UploadFile] = File(...),
     return PredictionResponse(result = results, image = postcard_urls, stamp = stamp_urls)
 
 @router.post("/modify")
-def predict(user_prompt: str = File(...),
-            blog_text: str = File(...)) -> PredictionResponse:
+def predict(jsons: UploadFile = File(...)) -> ModificationResponse:
     
-    convert_style(sample_prompt, sample_text)
+    if jsons:
+        json_file = jsons.file.read()
+        input_json = json.loads(json_file)
+    
+    
+    user_prompt = input_json['user_prompt']
+    raw_blog = input_json['raw_blog']
+    result = convert_style(user_prompt, raw_blog)
+    print(user_prompt)
+    print(result)
+    return ModificationResponse(result = result)
