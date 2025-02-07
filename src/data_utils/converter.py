@@ -1,12 +1,10 @@
 # 튜닝 안된 친굽로 바꾸는 방법
 import requests
-import datetime
-import hmac
-import hashlib
-import base64
-import json
-import re
+import yaml
 
+with open('src/api_keys.yaml') as f:
+    keys = yaml.load(f,Loader = yaml.FullLoader)
+api_key = keys['api_key']
 
 class ConvertStyleExecutor:
     def __init__(self, host, api_key, request_id):
@@ -16,7 +14,7 @@ class ConvertStyleExecutor:
 
     def execute(self, completion_request):
         headers = {
-            "Authorization": "Bearer nv-17385a251c36440aab340ff38f8242e3EhLs",
+            "Authorization": api_key,
             "X-NCP-CLOVASTUDIO-REQUEST-ID": "ait7-nc02",
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
@@ -36,7 +34,7 @@ class ConvertStyleExecutor:
 def convert_style(user_prompt, text):
     completion_executor = ConvertStyleExecutor(
         host='https://clovastudio.stream.ntruss.com',
-        api_key='Bearer nv-17385a251c36440aab340ff38f8242e3EhLs',
+        api_key=api_key,
         request_id='ait7-nc02'
     )
 
@@ -44,22 +42,26 @@ def convert_style(user_prompt, text):
     inputs = []
     texts = []
     text_split = text.split('\n')
+    if len(text_split) == 1:
+        text_split = text.split('\\n')
     
     for split in text_split:
-        if ("<" in split) and (">" in split):
-            inputs.append(texts[:])
+        if (".jpg" in split) and (".png" in split):
+            inputs.append(''.join(texts))
             tags.append(split)
             texts = []
             continue
         else:
             texts.append(split)
-    inputs.append(texts[:])
+
+    inputs.append(''.join(texts))
     tags.append('')
     if len(inputs) != len(tags):
         raise AssertionError(f'Length is different! : inputs:{len(inputs)}, tags:{len(tags)}')
     answers = []    
     for input_text,t in zip(inputs,tags):
-        if input_text == []:
+        print(input_text)
+        if len(input_text)<10:
             continue
         else:
             preset_text = [{"role":"system","content":f"너는 블로그 글의 문체를 바꿔주는 에이전트야. 위는 LLM으로 생성된 블로그 글의 초본이야.{user_prompt}"},{"role":"user","content":f"{input_text}"}]
@@ -69,23 +71,17 @@ def convert_style(user_prompt, text):
                 'topP': 0.8,
                 'topK': 0,
                 'maxTokens': 2048,
-                'temperature': 0.5,
+                'temperature': 0.3,
                 'repeatPenalty': 5,
                 'stopBefore': [],
                 'includeAiFilters': True
             }
-
             answer = completion_executor.execute(request_data)
+            print(answer)
             answers.append(answer)
             answers.append(t)
     
     results = '/n'.join(answers)
-
-    result = {
-        "user_prompt": user_prompt,
-        "text": text,
-        "answer": answer
-    }
     
     return results
 

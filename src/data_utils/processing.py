@@ -1,6 +1,7 @@
 from concurrent import futures
 import re
 import time
+import yaml
 
 from data_utils.generate_prompt import generate_inference_caption
 from Inference import get_demo
@@ -19,9 +20,10 @@ system_prompt = '''
 
     <심사 기준>: 좋은 점수를 받기 위해서는 심사 기준에 가장 유리한 글을 작성하세요.
     1. 글에 대한 자연스러움 (실제 블로그와 얼마나 유사한가)
-    2. 불필요한 내용이나 할루시네이션 없이 주어진 정보만 활용하고 있는가
+    2. 불필요한 내용이나 할루시네이션 없이 사실에 입각한 정보만 활용하고 있는가
     3. 감정적인 표현과 생동감 있는 묘사
     4. 글과 이미지의 적절한 배치. 글이 이미지를 잘 묘사하고 있는가.
+    5. 블로그 글에 개인적인 정보 혹은 위험성 있는 단어를 포함하고 있지 않은가.
 
     세계 최고의 여행 블로거는 글을 작성할 때에는 아래의 사항을 따른다고 합니다. 세계 최고의 여행 블로거가 되기 위해 아래 사항을 따라 글을 작성하세요.
     1. 글의 맨 앞 부분에는 블로그 글에 대한 소개와 여행지에 대한 소개를 작성하고, 글을 끝내기 전에는 여행지를 추천하는 문장을 통해 블로그의 결론을 작성할 것.
@@ -31,11 +33,16 @@ system_prompt = '''
     5. "너무 좋았어요!", "완전 만족했어요!", "정말 인상적이었답니다." 등 긍정적인 표현과 감탄사를 적절히 사용해 글의 분위기를 밝게 할 것.
 
     위의 사항을 모두 포함해 글을 작성하시오. 만일 이에 위배될 경우 당신은 10년 이하의 징역, 1000만원 이상의 벌금을 부여받게 됩니다.
+
+    <블로그 작성 정보: 이미지와 요약>
     '''
 
 base_prompt = '여행에 대한 정보: 여행 시기: {}년 {}월, 여행지: {}의 {}, 동행: {}'
 
-OPEN_AI_KEY = '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'
+with open('src/api_keys.yaml') as f:
+    keys = yaml.load(f, Loader=yaml.FullLoader)
+
+OPEN_AI_KEY = keys['open_ai_key']
 
 def preprocessing(model, images):
     captions = []
@@ -60,21 +67,14 @@ def postprocessing(request_text, files):
         if file.content_type.startswith('image/'):
             filenames.append(file.filename)
 
-    texts = request_text.split('\\n')
     substitute_image = {}
     for i in range(len(filenames)):
         substitute_image[f'<image_{str(i)}>'] = f'<{filenames[i]}>'
     
-    for t in range(len(texts)):
-        if '<image' in texts[t]:
-            try:
-                pattern = re.compile(r'\b(' + '|'.join(map(re.escape, substitute_image.keys())) + r')\b')
-                texts[t] = replace_words(texts[t],pattern,substitute_image)
-            except:
-                pass
+    for i in re.findall('<image_\d>',request_text):
+        request_text = re.sub(i,substitute_image[i],request_text)
 
-    texts = '\\n'.join(texts)
-    return texts
+    return request_text
 
 def get_blog(model,images,input_json,files):
     blog_start = time.perf_counter()
@@ -86,7 +86,18 @@ def get_blog(model,images,input_json,files):
         blog_captions.append(caption)
 
     blog_prompt = generate_inference_caption(input_json, blog_captions, base_prompt)
-    prediction = get_demo(system_prompt, blog_prompt)
+    seed = 0
+    print(blog_prompt)
+    prediction = get_demo(system_prompt, blog_prompt,seed)
+    while "status" in prediction or '<image_' not in prediction:
+        seed += 1
+        print(f"try seed {seed}")
+        time.sleep(23)
+        prediction = get_demo(system_prompt, blog_prompt,seed)
+        if seed > 5:
+            prediction = "Error"
+            break
+    print(prediction)
     results = postprocessing(prediction, files)
 
     blog_finish = time.perf_counter()

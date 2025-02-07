@@ -1,10 +1,16 @@
 import csv
 import os
-from openai import OpenAI
 import re
+import yaml
+
+from openai import OpenAI
 
 MAX_PROMPT_LENGTH = 1000
 
+with open('src/api_keys.yaml') as f:
+    keys = yaml.load(f, Loader=yaml.FullLoader)
+
+OPEN_AI_KEY = keys['stamp_ai_key']
 
 def load_captions_for_folder(csv_path, folder_name):
     """
@@ -106,7 +112,7 @@ def generate_prompt(inputs,captions):
 
 def main():
     # OpenAI API 키 설정
-    OPEN_AI_KEY = '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'
+    OPEN_AI_KEY = OPEN_AI_KEY
     
     # CSV 파일 경로
     csv_path = "caption_data/blog_image_captions_p_caption_english.csv"

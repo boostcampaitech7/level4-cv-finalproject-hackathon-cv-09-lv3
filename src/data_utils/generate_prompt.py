@@ -18,9 +18,10 @@ system_prompt = '''
 
 <심사 기준>: 좋은 점수를 받기 위해서는 심사 기준에 가장 유리한 글을 작성하세요.
 1. 글에 대한 자연스러움 (실제 블로그와 얼마나 유사한가)
-2. 불필요한 내용이나 할루시네이션 없이 주어진 정보만 활용하고 있는가
+2. 불필요한 내용이나 할루시네이션 없이 사실에 입각한한 정보만 활용하고 있는가
 3. 감정적인 표현과 생동감 있는 묘사
 4. 글과 이미지의 적절한 배치. 글이 이미지를 잘 묘사하고 있는가.
+5. 블로그 글에 개인적인 정보 혹은 위험성있는 단어를 활용하고 있지는 않은가.
 
 세계 최고의 여행 블로거는 글을 작성할 때에는 아래의 사항을 따른다고 합니다. 세계 최고의 여행 블로거가 되기 위해 아래 사항을 따라 글을 작성하세요.
 1. 글의 맨 앞 부분에는 블로그 글에 대한 소개와 여행지에 대한 소개를 작성하고, 글을 끝내기 전에는 여행지를 추천하는 문장을 통해 블로그의 결론을 작성할 것.
@@ -128,7 +129,7 @@ def post_processing(data):
         
         blogssss.append(' '.join(filtered_blog))
 
-        final_captions = []
+        final_captions = [system_prompt]
         for id,captions in enumerate(image_indexes):
             if len(image_indexes[captions])>0:
                 caption_text = str(image_indexes[captions])[1:-2]
@@ -145,10 +146,10 @@ def post_processing(data):
 
 def get_finetune_csv(data, return_csv = True):
     finetune_csv = pd.DataFrame({
-        'System_Prompt': [system_prompt for _ in range(len(data))],
+        'System_Prompt': data['prompt'],
         'C_ID':range(len(data)),
         'T_ID': ['0']*len(data),
-        'Text': data['prompt'],
+        'Text': ["주어진 블로그 정보와 규칙에 맞게 블로그를 작성하세요." for _ in range(len(data))],
         'Completion': data['contents']
     })
     if return_csv:
@@ -167,8 +168,14 @@ def generate_inference_caption(inputs,captions,base_prompt):
     sentences = [base_prompt.format(year,month,country,city,with_who)]
     for i,(t,c) in enumerate(zip(texts,captions)):
         korean_c = papago(c)
-        caption_prompt = f'<image_{str(i)}>: \n 설명: {korean_c} \n 느낀점: {t} \n'
+        caption_prompt = f'<image_{str(i)}>: {korean_c}'
         sentences.append(caption_prompt)
+    sentences.append("<요약>")
+    for i,t in enumerate(texts):
+        if t == None or len(t) < 5:
+            t = sentences[i+1].split(">: ")[1]
+        summary_prompt = f'- {t}'
+        sentences.append(summary_prompt)
     prompts = '\n'.join(sentences)
     return prompts
 

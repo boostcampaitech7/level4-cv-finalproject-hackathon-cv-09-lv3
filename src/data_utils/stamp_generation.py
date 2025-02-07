@@ -1,11 +1,13 @@
 import os
-from openai import OpenAI
-import requests
-# import pytesseract
+import yaml
 from PIL import Image
 import json
 from io import BytesIO
+
+from openai import OpenAI
+
 from data_utils.postcard import truncate_prompt, MAX_PROMPT_LENGTH
+
 
 def generate_stamp_image(api_key: str, final_prompt: str) -> str:
     """
@@ -14,14 +16,16 @@ def generate_stamp_image(api_key: str, final_prompt: str) -> str:
     """
     client = OpenAI(api_key=api_key)
 
-    response = client.images.generate(prompt=final_prompt,
+    image_url = []
+    '''response = client.images.generate(prompt=final_prompt,
     model="dall-e-3",
     n=1,
     size="1024x1024"
     )
     
-    image_url = response.data[0].url
-    return [image_url]
+    image_url.append(response.data[0].url)'''
+
+    return image_url
 
 
 def create_stamp(api_key: str, input_json: json) -> None:
@@ -53,7 +57,10 @@ def create_stamp(api_key: str, input_json: json) -> None:
 
 def main():
     # OpenAI API 키 설정
-    OPEN_AI_KEY = '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'
+    with open('api_keys.yaml') as f:
+        keys = yaml.load(f, Loader=yaml.FullLoader)
+
+    OPEN_AI_KEY = keys['stamp_ai_key']
 
     place = 'Europe'
     # 사용자 입력: 폴더 이름

@@ -7,6 +7,14 @@ from tqdm import tqdm
 import time
 import requests
 import re
+import yaml
+
+with open('src/api_keys.yaml') as f:
+    keys = yaml.load(f, Loader=yaml.FullLoader)
+
+api_key = keys['api_key']
+papago_api_key_id = keys['papago_api_key_id']
+papago_api_key = keys['papago_api_key']
 
 def text_processing(text):
     
@@ -51,8 +59,8 @@ def papago(text):
     # API 정보
     url = 'https://naveropenapi.apigw.ntruss.com/nmt/v1/translation'
     headers = {
-        'X-NCP-APIGW-API-KEY-ID': '5odl1lmj7o',
-        'X-NCP-APIGW-API-KEY': 'DU3KEwLdgUMUKED6NcWhc10xUfcZ8CYJAGVxB6Br',
+        'X-NCP-APIGW-API-KEY-ID': papago_api_key_id,
+        'X-NCP-APIGW-API-KEY': papago_api_key,
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 
@@ -84,7 +92,7 @@ if __name__ == '__main__':
     
     completion_executor = CompletionExecutor(
         host='clovastudio.stream.ntruss.com',
-        api_key='Bearer nv-17385a251c36440aab340ff38f8242e3EhLs',
+        api_key=api_key,
         request_id='28f8fee200ea4babbf18fc2391659072'
     )
 

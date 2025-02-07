@@ -1,7 +1,12 @@
 import requests
+import yaml
 
 from data_utils.generate_caption import VLM
 from data_utils.generate_prompt import generate_inference_caption
+
+with open('src/api_keys.yaml') as f:
+    keys = yaml.load(f,Loader = yaml.FullLoader)
+api_key = keys['api_key']
 
 class GetDemoExecutor:
     def __init__(self, host, api_key, request_id):
@@ -11,19 +16,21 @@ class GetDemoExecutor:
 
     def execute(self, completion_request):
         headers = {
-            "Authorization": "Bearer nv-17385a251c36440aab340ff38f8242e3EhLs",  # Replace with your actual API Key
+            "Authorization": api_key,  # Replace with your actual API Key
             "X-NCP-CLOVASTUDIO-REQUEST-ID": "ait7-nc02",  # Replace with your Request ID
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
         }
 
-        with requests.post(self._host + '/testapp/v1/chat-completions/HCX-003',
+        with requests.post(self._host + '/testapp/v2/tasks/a3rb0o5p/chat-completions', #'/testapp/v1/chat-completions/HCX-003'
                            headers=headers, json=completion_request, ) as r:
             for i,line in enumerate(r.iter_lines()):
                 if line and i%4 == 2:
                     text = line.decode("utf-8")
                     if "result" in text:
                         return text.split('"content":')[1].split('}')[0]
+                    elif "status" in text:
+                        return text
                     else:
                         pass
                 else: 
@@ -31,31 +38,29 @@ class GetDemoExecutor:
 
 
 
-def get_demo(system_prompt, prompt):
+def get_demo(system_prompt, prompt, seed):
     completion_executor = GetDemoExecutor(
         host='https://clovastudio.stream.ntruss.com',
-        api_key='Bearer nv-17385a251c36440aab340ff38f8242e3EhLs',
+        api_key=api_key,
         request_id='ait7-nc02'
     )
 
-    preset_text = [{"role": "system", "content": system_prompt},
-                   {"role":"user","content":  prompt}]
+    preset_text = [{"role": "system", "content": system_prompt + prompt},
+                   {"role":"user","content": '주어진 블로그 정보와 규칙에 맞게 블로그를 작성하세요'}]
 
     request_data = {
         'messages': preset_text,
         'topP': 0.8,
         'topK': 0,
-        'maxTokens': 1024,
+        'maxTokens': 1000,
         'temperature': 0.3,
-        'repeatPenalty': 5,
+        'repeatPenalty': 7,
         'stopBefore': [],
         'includeAiFilters': True,
-        'seed': 0
+        'seed': seed
     }
 
-    print(preset_text)
     request_text = completion_executor.execute(request_data)
-
     return request_text
 
 def main(jsons,images):
