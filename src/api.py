@@ -24,6 +24,9 @@ class ModificationResponse(BaseModel):
 @router.post("/predict")
 def predict(files: List[UploadFile] = File(...),
             jsons: UploadFile = File(...)) -> PredictionResponse:
+    '''
+    API 서버로 부터 업로드된 파일들을 받아서 블로그, 엽서, 스탬프 Inference 를 진행합니다.
+    '''
     images = []
     print(files)
     print(jsons)
@@ -72,6 +75,9 @@ def predict(files: List[UploadFile] = File(...),
 
 @router.post("/modify")
 def predict(jsons: UploadFile = File(...)) -> ModificationResponse:
+    '''
+    API 서버로부터 input을 받아 문체바꾸기를 수행해 결과를 반환합니다.
+    '''
     
     if jsons:
         json_file = jsons.file.read()

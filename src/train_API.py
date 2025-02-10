@@ -11,12 +11,14 @@ system_prompt = '''
     3. 불필요한 태그, 특수문자를 사용하지 말 것. 특히 블로그 글에 어색한 문단 구분을 활용하지 말 것.
     4. 사실에 입각한 정보만 블로그에 담아내야 하며, 블로그에 대한 오류가 있을 경우 허위사실유포죄에 의해 처벌 받을 수 있음.
     5. 블로그 글은 한 이미지당 3개 이상의 문장으로 구성되며, 각 문장에 최소 5개 이상의 단어를 통해 글을 풍성하게 표현할 것.
+    6. 블로그 글에 개인적인 정보 혹은 위험성 있는 단어는 제외되어야 한다.
 
     <심사 기준>: 좋은 점수를 받기 위해서는 심사 기준에 가장 유리한 글을 작성하세요.
     1. 글에 대한 자연스러움 (실제 블로그와 얼마나 유사한가).
     2. 불필요한 내용이나 할루시네이션 없이 주어진 정보만 활용하고 있는가.
     3. 감정적인 표현과 생동감 있는 묘사.
     4. 글과 이미지의 적절한 배치. 글이 이미지를 잘 묘사하고 있는가.
+    5. 블로그 글에 개인적인 정보 혹은 위험성 있는 단어를 포함하고 있지 않은가.
 
     세계 최고의 여행 블로거는 글을 작성할 때에는 아래의 사항을 따른다고 합니다. 세계 최고의 여행 블로거가 되기 위해 아래 사항을 따라 글을 작성하세요.
     1. 글의 맨 앞 부분에는 블로그 글에 대한 소개와 여행지에 대한 소개를 작성하고, 글을 끝내기 전에는 여행지를 추천하는 문장을 통해 블로그의 결론을 작성할 것.
@@ -152,7 +154,7 @@ class GetDemoExecutor:
 
     def execute(self, completion_request):
         headers = {
-            "Authorization": "Bearer nv-17385a251c36440aab340ff38f8242e3EhLs",  # Replace with your actual API Key
+            "Authorization": api_key,  # Replace with your actual API Key
             "X-NCP-CLOVASTUDIO-REQUEST-ID": "ait7-nc02",  # Replace with your Request ID
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
@@ -174,6 +176,9 @@ class GetDemoExecutor:
 
 
 def get_demo():
+    """
+    파인튜닝된 Hyper CLOVA X 모델을 demo를 통해 실험합니다.
+    """
     completion_executor = GetDemoExecutor(
         host='https://clovastudio.stream.ntruss.com',
         api_key=api_key,
@@ -197,11 +202,15 @@ def get_demo():
 
     print(preset_text)
     request_text = completion_executor.execute(request_data)
-    if "status" in request_text:
-        print('one more time')
+    tries = 0
+    while "status" in request_text and tries<5:
+        print(request_text)
+        tries+=1
+        print(f'try {tries} times')
         time.sleep(23)
         request_text = completion_executor.execute(request_data)
-    print(request_text)
+        
+    
 
 if __name__ == "__main__":
     get_demo()

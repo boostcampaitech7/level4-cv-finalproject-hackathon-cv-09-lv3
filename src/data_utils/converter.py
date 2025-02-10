@@ -1,6 +1,7 @@
 # 튜닝 안된 친굽로 바꾸는 방법
 import requests
 import yaml
+import time
 
 with open('src/api_keys.yaml') as f:
     keys = yaml.load(f,Loader = yaml.FullLoader)
@@ -32,6 +33,10 @@ class ConvertStyleExecutor:
 
 
 def convert_style(user_prompt, text):
+    """
+    문체바꾸기를 수행하는 함수입니다.
+    이미지 태그는 제외하고 나머지 텍스트에 대해 Hyper CLOVA X를 통해 문체를 변환합니다.
+    """
     completion_executor = ConvertStyleExecutor(
         host='https://clovastudio.stream.ntruss.com',
         api_key=api_key,
@@ -41,16 +46,16 @@ def convert_style(user_prompt, text):
     tags = []
     inputs = []
     texts = []
+    print(text)
     text_split = text.split('\n')
     if len(text_split) == 1:
         text_split = text.split('\\n')
     
     for split in text_split:
-        if (".jpg" in split) and (".png" in split):
+        if (".jpg" in split) or (".png" in split) or ("<image" in split) or (".jpeg" in split):
             inputs.append(''.join(texts))
             tags.append(split)
             texts = []
-            continue
         else:
             texts.append(split)
 
@@ -60,7 +65,6 @@ def convert_style(user_prompt, text):
         raise AssertionError(f'Length is different! : inputs:{len(inputs)}, tags:{len(tags)}')
     answers = []    
     for input_text,t in zip(inputs,tags):
-        print(input_text)
         if len(input_text)<10:
             continue
         else:
@@ -77,11 +81,18 @@ def convert_style(user_prompt, text):
                 'includeAiFilters': True
             }
             answer = completion_executor.execute(request_data)
+
+            tries = 0
+            while answer == "":
+                time.sleep(23)
+                answer = completion_executor.execute(request_data)
+                tries += 1
+
             print(answer)
             answers.append(answer)
             answers.append(t)
     
-    results = '/n'.join(answers)
+    results = '\n'.join(answers)
     
     return results
 

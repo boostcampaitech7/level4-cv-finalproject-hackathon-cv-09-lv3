@@ -56,6 +56,15 @@ class CompletionExecutor:
 #'https://clovastudio.stream.ntruss.com/testapp/v1/api-tools/summarization/v2'
 
 def papago(text):
+    """
+    text를 PAPAGO API를 통해 한국어로 변환합니다.
+
+    Parameters:
+        text: 한국어가 아닌 텍스트
+
+    Returns:
+        str: 한국어로 변환된 텍스트
+    """
     # API 정보
     url = 'https://naveropenapi.apigw.ntruss.com/nmt/v1/translation'
     headers = {

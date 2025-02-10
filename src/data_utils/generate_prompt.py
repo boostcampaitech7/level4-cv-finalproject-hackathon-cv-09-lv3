@@ -37,6 +37,21 @@ system_prompt = '''
 '''
 
 def generate_finetune_prompt(crawling_data,summary_data,caption_data, max_caption = 4, max_image = 10, return_csv = False):
+    """
+    Finetuning dataset을 구축하기 위한 prompt를 생성합니다.
+
+    Parameters:
+        crawling_data: 크롤링한 원본 블로그 데이터
+        summary_data: 블로그를 요약한 데이터
+        caption_data: 블로그의 이미지 캡션 데이터
+        max_caption: 이미지당 최대 캡션 문장 수
+        max_image: 블로그당 최대 이미지 수
+        return_csv: csv 반환 여부부
+
+    Returns:
+        dataframe: 구축한 Finetuning dataset
+    """
+
     caption_data['blog'] = caption_data['image_path'].apply(lambda x: x.split('/')[0])
     caption_data['captions'] = caption_data['captions'].apply(lambda x: f"[{x}]")
 
@@ -95,6 +110,17 @@ def change_prompt(prompt_text,v,csv = 'data/finetuning_data.csv'):
     fd.to_csv(f'data/finetunde_dataset_ver{v}.csv', index=False, encoding='uft-8-sig')
     
 def post_processing(data):
+    """
+    구축된 Finetuning dataset을 후처리합니다.
+    Finetuning dataset을 Inference dataset과 유사하게 구성하기 위해 연속적인 이미지 제외, 불필요한 캡션을 제거합니다.
+
+    Parameters:
+        data: generate_finetune_prompt 함수로 생성된 dataset
+
+    Returns:
+        dataframe: 후처리된 finetuning dataset
+    """
+
     caption_data = data['prompt'],
     blog_data = data['contents']
     blogssss = []
@@ -145,6 +171,17 @@ def post_processing(data):
         return data
 
 def get_finetune_csv(data, return_csv = True):
+    """
+    구축된 Finetuning dataset을 최종적으로 HyperCLOVA X의 파인튜닝 양식에 맞춥니다.
+
+    Parameters:
+        data: 후처리를 거쳐 생성된 dataset
+        return_csv: csv 반환 여부부
+
+    Returns:
+        dataframe: 최종 finetuning dataset
+    """
+
     finetune_csv = pd.DataFrame({
         'System_Prompt': data['prompt'],
         'C_ID':range(len(data)),
@@ -159,6 +196,18 @@ def get_finetune_csv(data, return_csv = True):
         return finetune_csv
 
 def generate_inference_caption(inputs,captions,base_prompt):
+    """
+    Inference에 활용될 prompt를 생성합니다.
+
+    Parameters:
+        inputs: 사용자의 input text
+        captions: 사용자의 input image의 캡션 정보
+        base_prompt: 공통된 prompt
+
+    Returns:
+        str: Inferece prompt
+    """
+
     country = inputs['meta_data']['Country/City'].split('/')[0]
     city = inputs['meta_data']['Country/City'].split('/')[1]
     year = inputs['meta_data']['date'].split('.')[0]

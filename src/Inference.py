@@ -31,14 +31,15 @@ class GetDemoExecutor:
                         return text.split('"content":')[1].split('}')[0]
                     elif "status" in text:
                         return text
-                    else:
-                        pass
                 else: 
                     pass
 
 
 
-def get_demo(system_prompt, prompt, seed):
+def get_blog_inference(system_prompt, prompt, seed):
+    """
+    Hyper CLOVA X를 통해 블로그를 작성하는 함수입니다.
+    """
     completion_executor = GetDemoExecutor(
         host='https://clovastudio.stream.ntruss.com',
         api_key=api_key,
@@ -73,7 +74,7 @@ def main(jsons,images):
     
     assert len(jsons['text']) == len(captions)
     prompt = generate_inference_caption(jsons,captions)
-    request_text =get_demo(prompt)
+    request_text =get_blog_inference(prompt)
     #results = postprocessing(request_text, files)
     
 

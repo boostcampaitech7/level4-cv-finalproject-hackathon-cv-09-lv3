@@ -4,7 +4,7 @@ import time
 import yaml
 
 from data_utils.generate_prompt import generate_inference_caption
-from Inference import get_demo
+from Inference import get_blog_inference
 from data_utils.postcard import generate_prompt, generate_postcard
 from data_utils.stamp_generation import create_stamp
 
@@ -17,6 +17,7 @@ system_prompt = '''
     3. 불필요한 태그, 특수문자를 사용하지 말 것. 특히 블로그 글에 어색한 문단 구분을 활용하지 말 것
     4. 사실에 입각한 정보만 블로그에 담아내야 하며, 블로그에 대한 오류가 있을 경우 허위사실유포죄에 의해 처벌 받을 수 있음.
     5. 블로그 글은 한 이미지당 3개 이상의 문장으로 구성되며, 각 문장에 최소 5개 이상의 단어를 통해 글을 풍성하게 표현할 것
+    6. 블로그 글에 개인적인 정보 혹은 위험성 있는 단어는 제외되어야 한다.
 
     <심사 기준>: 좋은 점수를 받기 위해서는 심사 기준에 가장 유리한 글을 작성하세요.
     1. 글에 대한 자연스러움 (실제 블로그와 얼마나 유사한가)
@@ -45,6 +46,9 @@ with open('src/api_keys.yaml') as f:
 OPEN_AI_KEY = keys['open_ai_key']
 
 def preprocessing(model, images):
+    '''
+    Dalle 엽서 생성을 위한 캡셔닝 생성
+    '''
     captions = []
 
     captioning_start = time.perf_counter()
@@ -62,6 +66,10 @@ def replace_words(text, pattern, replace_dict):
     return pattern.sub(lambda match: replace_dict[match.group(0)], text)
 
 def postprocessing(request_text, files):
+    '''
+    생성된 블로그를 후처리하는 함수입니다. 
+    생성된 블로그의 이미지 태그를 원본 이미지 태그로 바꿔줍니다.
+    '''
     filenames = []
     for file in files:
         if file.content_type.startswith('image/'):
@@ -71,12 +79,28 @@ def postprocessing(request_text, files):
     for i in range(len(filenames)):
         substitute_image[f'<image_{str(i)}>'] = f'<{filenames[i]}>'
     
+    pattern = rf"([^\n]){re.escape(i)}([^\n])"
+    replacement = rf"\1\n{i}\n\2"
+    request_text = re.sub(pattern, replacement, request_text)
+
+    pattern = rf"(^|[^\n]){re.escape(i)}(\n)"
+    replacement = rf"\1\n{i}\2"
+    request_text = re.sub(pattern, replacement, request_text)
+
+    pattern = rf"(\n){re.escape(i)}([^\n]|$)"
+    replacement = rf"\1{i}\n\2"
+    request_text = re.sub(pattern, replacement, request_text)
+
     for i in re.findall('<image_\d>',request_text):
         request_text = re.sub(i,substitute_image[i],request_text)
 
     return request_text
 
 def get_blog(model,images,input_json,files):
+    '''
+    블로그를 생성하는 함수입니다.
+    VLM으로 생성된 캡션을 활용해 하이퍼클로바 API와 interaction하는 과정을 담고 있습니다.
+    '''
     blog_start = time.perf_counter()
     print("'''start generating blog'''")
 
@@ -88,12 +112,12 @@ def get_blog(model,images,input_json,files):
     blog_prompt = generate_inference_caption(input_json, blog_captions, base_prompt)
     seed = 0
     print(blog_prompt)
-    prediction = get_demo(system_prompt, blog_prompt,seed)
+    prediction = get_blog_inference(system_prompt, blog_prompt,seed)
     while "status" in prediction or '<image_' not in prediction:
         seed += 1
         print(f"try seed {seed}")
         time.sleep(23)
-        prediction = get_demo(system_prompt, blog_prompt,seed)
+        prediction = get_blog_inference(system_prompt, blog_prompt,seed)
         if seed > 5:
             prediction = "Error"
             break
@@ -105,6 +129,10 @@ def get_blog(model,images,input_json,files):
     return results
 
 def get_dalle(input_json,captions):
+    '''
+    3장의 postcard를 생성하는 함수 입니다.
+    preprocessing에서 생성된 caption을 활용합니다.
+    '''
     dalle_start = time.perf_counter()
     print("'''start generating dalle'''")
     
@@ -113,9 +141,9 @@ def get_dalle(input_json,captions):
 
     postcard_urls = []
 
-    '''for i in range(3):
+    for i in range(3):
         postcard_url = generate_postcard(OPEN_AI_KEY, postcard_prompt)
-        postcard_urls.append(postcard_url)'''
+        postcard_urls.append(postcard_url)
     
     dalle_finish = time.perf_counter()
     print(f'Finished dalle {round(dalle_finish-dalle_start, 2)} second(s)')
@@ -123,9 +151,16 @@ def get_dalle(input_json,captions):
     return postcard_urls
 
 def get_stamp(input_json):
+    '''
+    생성된 스탬프를 받아오는 함수입니다.
+    '''
     return create_stamp(OPEN_AI_KEY,input_json)
 
 def multi_process(model,images,input_json,captions,files):
+    '''
+    API를 활용하는 3가지 과정(블로그, 엽서, 스탬프)을 multi process로 실행하는 함수입니다.
+    multi process를 활용해 전체 프로세스를 30초 단축
+    '''
     with futures.ThreadPoolExecutor() as executor:
         dalle = executor.submit(get_dalle, input_json, captions)
         blog = executor.submit(get_blog, model, images, input_json, files)

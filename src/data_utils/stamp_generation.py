@@ -17,13 +17,13 @@ def generate_stamp_image(api_key: str, final_prompt: str) -> str:
     client = OpenAI(api_key=api_key)
 
     image_url = []
-    '''response = client.images.generate(prompt=final_prompt,
+    response = client.images.generate(prompt=final_prompt,
     model="dall-e-3",
     n=1,
     size="1024x1024"
     )
     
-    image_url.append(response.data[0].url)'''
+    image_url.append(response.data[0].url)
 
     return image_url
 

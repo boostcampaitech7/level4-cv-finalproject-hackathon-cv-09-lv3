@@ -47,6 +47,17 @@ class VLM():
 
         
     def generate_caption_from_csv(self, csv_path, image_path):
+        """
+        Finetuning에 활용될 크롤링 블로그의 이미지들에 대한 캡션을 생성합니다.
+
+        Parameters:
+            csv_path: 크롤링된 블로그 데이터셋 경로
+            image_path: 캡션을 생성할 이미지 경로
+
+        Returns:
+            dataframe: 캡션이 저장된 데이터셋
+        """
+    
         image_csv = pd.read_csv(csv_path)['blog_number'][450:]
 
         image_paths = []
@@ -85,6 +96,16 @@ class VLM():
         caption_csv.to_csv('blog_image_captions2_3.csv',index=False, encoding = 'utf-8-sig')
 
     def generate_caption_for_blog(self,image):
+        """
+        블로그 생성을 위한 사용자의 input 이미지들에 대한 캡션을 생성합니다.
+
+        Parameters:
+            image: 사용자의 input image
+
+        Returns:
+            str: 이미지 캡션
+        """
+
         image = image.resize((512,512))
 
         prompt = [
@@ -95,7 +116,7 @@ class VLM():
                         "type": "image",
                         "image": image
                     },
-                    {"type": "text", "text": "Describe this image in English:"},
+                    {"type": "text", "text": "I want to know where it is and description about this image"},
                 ]
             },
         ]
@@ -118,6 +139,16 @@ class VLM():
         return caption
     
     def generate_caption_for_dalle(self,image):
+        """
+        달리를 통한 엽서 생성을 위한 사용자의 input 이미지들에 대한 캡션을 생성합니다.
+
+        Parameters:
+            image: 사용자의 input image
+
+        Returns:
+            str: 이미지 캡션
+        """
+
         image = image.resize((512,512))
 
         prompt = [
