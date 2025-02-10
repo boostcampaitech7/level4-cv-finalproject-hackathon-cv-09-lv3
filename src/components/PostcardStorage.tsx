@@ -67,11 +67,10 @@ function PostcardStorage() {
 
   const handleSelectPostcard = async (id: number) => {
     try {
-      // 현재 상태 확인
       const response = await apiFetch(`/projects/${id}`, { method: "GET" });
       const status = response.status;
+      const selected = postcards.find((pc) => pc.id === id);
 
-      // 상태에 따라 적절한 컴포넌트로 이동
       switch (status) {
         case "1": // 입력 이미지만 받은 상태
           navigate("/description", { state: { projectId: id } });
@@ -79,13 +78,16 @@ function PostcardStorage() {
         case "2": // 이미지마다 사용자 설명 받은 상태
           navigate("/loading", { state: { projectId: id } });
           break;
-        case "3": // 로딩 완료 후 엽서 선택 안 된 상태
+        case "3": // 로딩 완료 후, 스탬프 확인 단계
+          navigate("/stamp-checker", { state: { projectId: id } });
+          break;
+        case "4": // 스탬프 확인 후, 엽서 선택 전 단계
           navigate("/postcard-selection", { state: { projectId: id } });
           break;
-        case "4": // response.json은 받았으나 생성하기를 안 누름
+        case "5": // 스탬프 확인 후, 블로그 글 수정 단계
           navigate("/blog-content", { state: { projectId: id } });
           break;
-        case "5": // 최종 블로그 생성 완료 상태
+        case "6": // 최종 완료 상태 (블로그 작성 완료)
           navigate(`/postcard/${id}`);
           break;
         default:

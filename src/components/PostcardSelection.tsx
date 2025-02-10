@@ -1,3 +1,4 @@
+// /data/ephemeral/home/travelog/src/components/PostcardSelection.tsx
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTravelContext } from "../context/TravelContext";
@@ -7,28 +8,25 @@ import { apiFetch } from "../api";
 function PostcardSelection() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { projectId } = (location.state as { projectId: number }) || {}; // Loading 단계에서 넘긴 projectId
+  const { projectId } = (location.state as { projectId: number }) || {};
   const { generatedPostcards } = useTravelContext();
 
-  // 사용자가 엽서 1개를 선택
+  // 사용자가 엽서를 선택하면:
   const handleSelectCard = async (id: number, url: string) => {
     try {
-      // 1) 백엔드로 이미지 URL 전송 (query parameter로 전달)
+      // 1) 백엔드로 이미지 URL 전송
       await apiFetch(`/projects/${projectId}/image_url?input=${encodeURIComponent(url)}`, {
         method: "POST",
       });
 
-      // 2) 상태를 4로 업데이트 (쿼리 파라미터 방식)
-      await apiFetch(`/projects/${projectId}/status?status=4`, {
+      // 2) 상태 업데이트: 상태를 "5"로 변경
+      await apiFetch(`/projects/${projectId}/status?status=5`, {
         method: "POST",
       });
 
-      // 3) blog-content로 이동 (projectId와 selectedPostcard 정보 전달)
+      // 3) /blog-content로 이동
       navigate("/blog-content", {
-        state: {
-          selectedPostcard: { id, url },
-          projectId,
-        },
+        state: { selectedPostcard: { id, url }, projectId },
       });
     } catch (err: any) {
       console.error("이미지 선택 중 오류 발생:", err);
@@ -72,7 +70,7 @@ function PostcardSelection() {
 export default PostcardSelection;
 
 
-
+// // PostcardSelection.tsx
 // import React from "react";
 // import { useNavigate, useLocation } from "react-router-dom";
 // import { useTravelContext } from "../context/TravelContext";
@@ -82,26 +80,33 @@ export default PostcardSelection;
 // function PostcardSelection() {
 //   const navigate = useNavigate();
 //   const location = useLocation();
-//   const { projectId } = (location.state as { projectId: number }) || {}; // Loading 단계에서 넘긴 projectId
+//   const { projectId } = (location.state as { projectId: number }) || {};
 //   const { generatedPostcards } = useTravelContext();
 
-//   // 사용자가 엽서 1개를 선택
+//   // 사용자가 엽서를 선택하면:
 //   const handleSelectCard = async (id: number, url: string) => {
 //     try {
-//       // 1) 백엔드로 이미지 URL 전송 (query parameter로 전달)
-//       await apiFetch(`/projects/${projectId}/image_url?input=${encodeURIComponent(url)}`, {
+//       // 1) 백엔드로 이미지 URL 전송 (쿼리 파라미터 방식)
+//       await apiFetch(
+//         `/projects/${projectId}/image_url?input=${encodeURIComponent(url)}`,
+//         { method: "POST" }
+//       );
+
+//       // 2) 상태를 4 (스탬프 확인이 필요한 상태)로 업데이트
+//       await apiFetch(`/projects/${projectId}/status?status=4`, {
 //         method: "POST",
 //       });
 
-//       // 2) blog-content로 이동 (추가로 projectId, selectedPostcard 정보 전달)
-//       navigate("/blog-content", {
+//       // 3) StampChecker 페이지로 이동 (선택한 엽서 정보와 projectId 전달)
+//       navigate("/stamp-checker", {
 //         state: {
 //           selectedPostcard: { id, url },
 //           projectId,
 //         },
 //       });
 //     } catch (err: any) {
-//       alert("이미지 선택 중 오류 발생: " + err.message);
+//       console.error("이미지 선택 중 오류 발생:", err);
+//       alert("이미지 선택 중 오류가 발생했습니다. " + err.message);
 //     }
 //   };
 

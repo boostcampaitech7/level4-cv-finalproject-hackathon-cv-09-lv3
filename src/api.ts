@@ -1,7 +1,7 @@
 // src/api.ts
 export const BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://bbfb-223-130-141-5.ngrok-free.app/api";
+  "https://375c-223-130-141-5.ngrok-free.app/api";
 
 /** 토큰이 있으면 Authorization 헤더를 자동으로 붙여주는 fetch 래퍼 */
 export async function apiFetch(
