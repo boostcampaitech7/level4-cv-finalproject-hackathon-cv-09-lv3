@@ -136,19 +136,19 @@ You can find detailed explanations about the project and individual contribution
 
 ## **📰 Model**
 ### Blog Generator (HyperCLOVA X)
-HyperCLOVA X is a large-scale Korean language model capable of processing and generating natural language text. It is used in this project to create structured and engaging travel blog posts by leveraging image captions and user-provided details. Through prompt engineering, the model enhances fluency, coherence, and storytelling while minimizing hallucinations.
+**HyperCLOVA X** is a large-scale Korean language model capable of processing and generating natural language text. It is used in this project to create structured and engaging travel blog posts by leveraging image captions and user-provided details. Through prompt engineering, the model enhances fluency, coherence, and storytelling while minimizing hallucinations.
 - Training is available through `edit`.
 - Inference is available through `edit`.
 - Preprocessing and dataset preparation are available in `edit`.
 
 ### Vision-Language Model (Qwen2-VL)
-Qwen2-VL is a multimodal model capable of understanding and generating both text and image-related content. In this project, it is used to extract contextual information from images and generate descriptions that improves the quality of AI-generated travel blogs.
+**Qwen2-VL** is a multimodal model capable of understanding and generating both text and image-related content. In this project, it is used to extract contextual information from images and generate descriptions that improves the quality of AI-generated travel blogs.
 - Vision-language tasks, including image captioning, are available through `edit`.
 - Preprocessing and data handling are managed in `edit`.
 - For installation and supported models, refer to the [Hugging Face model repository](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct).
 
 ### Text-to-Image Generator (DALL·E API)
-DALL·E API is an AI-powered image generation model capable of creating high-quality visuals based on textual descriptions. In this project, it is used to generate postcard-style images that complement blog content, enhancing the storytelling experience with visually appealing travel imagery.
+**DALL·E API** is an AI-powered image generation model capable of creating high-quality visuals based on textual descriptions. In this project, it is used to generate postcard-style images that complement blog content, enhancing the storytelling experience with visually appealing travel imagery.
 - Image generation is available through `edit`.
 - For API usage and model capabilities, refer to [OpenAI’s official documentation](https://platform.openai.com/docs/guides/images).
 
