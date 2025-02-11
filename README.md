@@ -137,19 +137,19 @@ You can find detailed explanations about the project and individual contribution
 ## **📰 Model**
 ### Blog Generator (HyperCLOVA X)
 **HyperCLOVA X** is a large-scale Korean language model capable of processing and generating natural language text. It is used in this project to create structured and engaging travel blog posts by leveraging image captions and user-provided details. Through prompt engineering, the model enhances fluency, coherence, and storytelling while minimizing hallucinations.
-- Training is available through `edit`.
-- Inference is available through `edit`.
-- Preprocessing and dataset preparation are available in `edit`.
+- Training is available through `modeling/train_API.py`.
+- Inference is available through `modeling/Inference.py`.
+- Preprocessing and dataset preparation are available in `modeling/data_utils/generate_prompt.py`.
 
 ### Vision-Language Model (Qwen2-VL)
 **Qwen2-VL** is a multimodal model capable of understanding and generating both text and image-related content. In this project, it is used to extract contextual information from images and generate descriptions that improves the quality of AI-generated travel blogs.
-- Vision-language tasks, including image captioning, are available through `edit`.
-- Preprocessing and data handling are managed in `edit`.
+- Vision-language tasks, including image captioning, are available through `modeling/data_utils/generate_caption.py`.
+- Preprocessing and data handling are managed in `modeling/data_utils/naver_summary.py`.
 - For installation and supported models, refer to the [Hugging Face model repository](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct).
 
 ### Text-to-Image Generator (DALL·E API)
 **DALL·E API** is an AI-powered image generation model capable of creating high-quality visuals based on textual descriptions. In this project, it is used to generate postcard-style images that complement blog content, enhancing the storytelling experience with visually appealing travel imagery.
-- Image generation is available through `edit`.
+- Image generation is available through `modeling/data_utils/postcard.py`.
 - For API usage and model capabilities, refer to [OpenAI’s official documentation](https://platform.openai.com/docs/guides/images).
 
 
