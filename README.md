@@ -37,54 +37,18 @@ You can find detailed explanations about the project and individual contribution
 ```
 
 ┌── crawling
+|   ├── crawling_selenium.py
 │   └── crawling.py
-├── public
-│   └── vite.svg
-├── server
-│   ├── database
-│   │   ├── migrations
-│   │   │     ├── versions
-│   │   │     │      └── 149264e17467_init_schema.py
-│   │   │     ├── env.py
-│   │   │     └── scr.pt.py.mako
-│   │   ├── alembic.ini
-│   │   ├── api.py
-│   │   ├── create-test-data.py
-│   │   ├── database.py
-│   │   ├── dummyData.py
-│   │   ├── models.py
-│   │   └── schemas.py
-│   ├── routers
-│   │   ├── admin.py
-│   │   ├── api.py
-│   │   ├── auth.py
-│   │   ├── inference.py
-│   │   ├── projects.py
-│   │   ├── routers.py
-│   │   └── users.py
-│   ├── __main__.py
-│   ├── config.py
-│   ├── main.py
-│   ├── security.py
-├── src
-│   ├── assets  
-│   │   └── react.svg
-│   ├── components
-│   │   ├── BlogContentPage.tsx
-│   │   ├── Layout.tsx
-│   │   ├── LoadingBlogCreation.tsx
-│   │   ├── LoginPage.css
-│   │   ├── LoginPage.tsx
-│   │   ├── PhotoDescription.tsx
-│   │   ├── PhotoUpload.tsx
-│   │   ├── PostcardDetail.tsx
-│   │   ├── PostcardEdit.tsx
-│   │   ├── PostcardSelection.tsx
-│   │   ├── PostcardStorage.tsx
-│   │   └── StampChecker.tsx
-│   ├── context
-|   │   ├── TokenContext.tsx
-|   │   └── TravelContext.tsx
+├── frontend
+|   ├── public
+│   │   └── vite.svg
+|   ├── src
+│   │   ├── assets
+│   │   └── ...
+|   ├── ...
+|   ├── package.json
+│   └── vite.config.ts
+├── modeling
 |   ├── data_utils
 |   |   ├── blog_image.py
 |   |   ├── converter.py
@@ -98,41 +62,28 @@ You can find detailed explanations about the project and individual contribution
 |   |   ├── config.py
 |   |   ├── database.py
 |   |   └── dependencies.py
-│   ├── pages
-|   |   └── AppRouter.tsx
-│   ├── styles
-|   |   └── GlobalStyle.ts
 │   ├── api.py
-│   ├── api.ts
-│   ├── App.css
-│   ├── App.tsx
-│   ├── index.css
 │   ├── inference.py
 │   ├── main.py
-│   ├── main.tsx
-│   ├── train_API.py
-│   └── vite-env.d.ts
-├── .gitignore
-├── mmsegmentation
-├── environment.yml
-├── eslint.config.js
-├── index.html
-├── package_backend.json
-├── package-lock.json
-├── package.json
-├── postcss.config.js
-├── README.md
-├── tailwind.config.js
-├── tsconfig.app.json
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
+│   └── train_API.py
+├── server
+│   ├── database
+│   │   ├── ...
+│   ├── routers
+│   │   ├── admin.py
+│   │   ├── ...
+│   ├── __main__.py
+│   ├── config.py
+│   ├── main.py
+│   └── security.py
+└── README.md
+
 
 ```
 - `crawling`: Uses the Naver Search API to crawl and preprocess data.
 - `server`: Implements a backend server using Router, Ngrok, and FastAPI.
-- `src`: Contains frontend code using Ngrok and React, along with model training and inference using HyperCLOVA.
-
+- `frontend`: Contains frontend code using Ngrok and React.
+- `modeling`: Contains model training and inference using HyperCLOVA.
 
 ## **📰 Model**
 ### Blog Generator (HyperCLOVA X)
