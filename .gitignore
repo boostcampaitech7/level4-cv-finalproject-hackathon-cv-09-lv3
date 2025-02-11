@@ -23,3 +23,11 @@ src/.env
 *.njsproj
 *.sln
 *.sw?
+# Python 캐시 디렉토리 무시
+__pycache__/
+
+# SQLite 데이터베이스 파일 무시
+*.db
+
+# file_storage 폴더 무시
+file_storage/
