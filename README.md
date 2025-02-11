@@ -131,9 +131,7 @@ You can find detailed explanations about the project and individual contribution
 
 
 ## **📰**Model
-### src
-- SMP model training is available through `train_API.py`
-- SMP model inference is available through `inference.py`
+
 
 
 
