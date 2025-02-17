@@ -26,7 +26,6 @@ You can find detailed explanations about the project and individual contribution
 
 [**Click here for our Wrap-up Report**](https://broadleaf-jasper-0c4.notion.site/Wrap-up-Report-19d6eecd59ba80669c83c0b1fcaafd52?pvs=4)
 
----
 
 ## **🛠️**Tools
 
@@ -89,7 +88,6 @@ You can find detailed explanations about the project and individual contribution
 - `frontend`: Contains frontend code using Ngrok and React.
 - `modeling`: Contains model training and inference using HyperCLOVA.
 
----
 
 ## **📰 Model**
 ### Blog Generator (HyperCLOVA X)
@@ -121,7 +119,6 @@ You can find detailed explanations about the project and individual contribution
 - Refines the LLM’s default writing style to produce more natural and human-like blog content.
 - Enhances emotional depth with more vivid and diverse expressions.
 <img src="https://github.com/user-attachments/assets/02306a23-ed50-4e2b-94fc-ce5a40638ddf" width="70%">
-
 ---
 
 **© 2025 Travelog Team**
