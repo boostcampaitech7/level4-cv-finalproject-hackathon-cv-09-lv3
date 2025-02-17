@@ -9,20 +9,24 @@ This project, Travelog, is a service that automatically generates blog posts bas
 
 ## **📘**Contributors
 
-|임동훈(Leader)|은의찬|한승수|김동영|김예나
+|임동훈(Leader)|은의찬|한승수|김동영|김예나|
 |:----:|:----:|:----:|:----:|:----:|
 | [<img src="https://github.com/user-attachments/assets/6a8e6613-b4c3-4e99-8bc6-99f82b5ce681" alt="" style="width:100px;100px;">](https://github.com/naringles) <br/> | [<img src="https://github.com/user-attachments/assets/a202a714-c51f-4228-9f87-201844f6afea" alt="" style="width:100px;100px;">](https://github.com/0522chan) <br/> | [<img src="https://github.com/user-attachments/assets/b2e040a7-dca3-4a23-b44f-5de84b76c950" alt="" style="width:100px;100px;">](https://github.com/hanseungsoo13) <br/> | [<img src="https://github.com/user-attachments/assets/7ad23168-31ab-4dfe-bb16-48e79c304374" alt="" style="width:100px;100px;">](https://github.com/kimdyoc13) <br/> | [<img src="https://github.com/user-attachments/assets/358e2764-a79f-4e78-9de9-5a887ef75001" alt="" style="width:100px;100px;">](https://github.com/yehna2907) <br/> | 
 
 
 ## **📱 Project Demo**
-To be updated...
+
+[![Demo Video](https://img.youtube.com/vi/UCgcQKsg8pg/0.jpg)](https://youtu.be/UCgcQKsg8pg)
+
+Click the thumbnail or [this link](https://youtu.be/UCgcQKsg8pg) to watch our demo on YouTube.
 
 
-## **📘**Wrap up Report
-You can find detailed explanations about the project and individual contributions in the wrap-up report below.
+## **📘 Wrap up Report**
+You can find detailed explanations about the project and individual contributions in the wrap-up report below:
 
-[Here's our link]()
+[**Click here for our Wrap-up Report**](https://broadleaf-jasper-0c4.notion.site/Wrap-up-Report-19d6eecd59ba80669c83c0b1fcaafd52?pvs=4)
 
+---
 
 ## **🛠️**Tools
 
@@ -85,6 +89,8 @@ You can find detailed explanations about the project and individual contribution
 - `frontend`: Contains frontend code using Ngrok and React.
 - `modeling`: Contains model training and inference using HyperCLOVA.
 
+---
+
 ## **📰 Model**
 ### Blog Generator (HyperCLOVA X)
 **HyperCLOVA X** is a large-scale Korean language model capable of processing and generating natural language text. It is used in this project to create structured and engaging travel blog posts by leveraging image captions and user-provided details. Through prompt engineering, the model enhances fluency, coherence, and storytelling while minimizing hallucinations.
@@ -115,3 +121,7 @@ You can find detailed explanations about the project and individual contribution
 - Refines the LLM’s default writing style to produce more natural and human-like blog content.
 - Enhances emotional depth with more vivid and diverse expressions.
 <img src="https://github.com/user-attachments/assets/02306a23-ed50-4e2b-94fc-ce5a40638ddf" width="70%">
+
+---
+
+**© 2025 Travelog Team**
