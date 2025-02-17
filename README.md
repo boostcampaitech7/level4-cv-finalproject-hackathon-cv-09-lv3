@@ -9,9 +9,9 @@ This project, Travelog, is a service that automatically generates blog posts bas
 
 ## **📘**Contributors
 
-|은의찬|임동훈|김예나|한승수|김동영
+|임동훈(Leader)|은의찬|한승수|김동영|김예나
 |:----:|:----:|:----:|:----:|:----:|
-| [<img src="https://github.com/user-attachments/assets/a202a714-c51f-4228-9f87-201844f6afea" alt="" style="width:100px;100px;">](https://github.com/0522chan) <br/> | [<img src="https://github.com/user-attachments/assets/6a8e6613-b4c3-4e99-8bc6-99f82b5ce681" alt="" style="width:100px;100px;">](https://github.com/naringles) <br/> | [<img src="https://github.com/user-attachments/assets/358e2764-a79f-4e78-9de9-5a887ef75001" alt="" style="width:100px;100px;">](https://github.com/yehna2907) <br/> | [<img src="https://github.com/user-attachments/assets/b2e040a7-dca3-4a23-b44f-5de84b76c950" alt="" style="width:100px;100px;">](https://github.com/hanseungsoo13) <br/> | [<img src="https://github.com/user-attachments/assets/7ad23168-31ab-4dfe-bb16-48e79c304374" alt="" style="width:100px;100px;">](https://github.com/kimdyoc13) <br/> | 
+| [<img src="https://github.com/user-attachments/assets/6a8e6613-b4c3-4e99-8bc6-99f82b5ce681" alt="" style="width:100px;100px;">](https://github.com/naringles) <br/> | [<img src="https://github.com/user-attachments/assets/a202a714-c51f-4228-9f87-201844f6afea" alt="" style="width:100px;100px;">](https://github.com/0522chan) <br/> | [<img src="https://github.com/user-attachments/assets/b2e040a7-dca3-4a23-b44f-5de84b76c950" alt="" style="width:100px;100px;">](https://github.com/hanseungsoo13) <br/> | [<img src="https://github.com/user-attachments/assets/7ad23168-31ab-4dfe-bb16-48e79c304374" alt="" style="width:100px;100px;">](https://github.com/kimdyoc13) <br/> | [<img src="https://github.com/user-attachments/assets/358e2764-a79f-4e78-9de9-5a887ef75001" alt="" style="width:100px;100px;">](https://github.com/yehna2907) <br/> | 
 
 
 ## **📱 Project Demo**
